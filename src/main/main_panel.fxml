@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<GridPane alignment="center" hgap="10" vgap="10" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.MainController">
+   <columnConstraints>
+      <ColumnConstraints />
+      <ColumnConstraints />
+   </columnConstraints>
+   <rowConstraints>
+      <RowConstraints />
+      <RowConstraints />
+      <RowConstraints />
+   </rowConstraints>
+   <children>
+      <Accordion GridPane.columnIndex="1" GridPane.rowIndex="2" />
+      <Pane prefHeight="253.0" prefWidth="444.0">
+         <children>
+            <TextField fx:id="usernameField" layoutX="141.0" layoutY="52.0" />
+            <PasswordField fx:id="passwordField" layoutX="141.0" layoutY="114.0" />
+            <Label layoutX="37.0" layoutY="57.0" text="Username" />
+            <Label layoutX="38.0" layoutY="119.0" text="Password" />
+            <Button layoutX="141.0" layoutY="167.0" mnemonicParsing="false" onAction="#connection" prefHeight="26.0" prefWidth="163.0" text="Connection" />
+         </children>
+      </Pane>
+   </children>
+</GridPane>
