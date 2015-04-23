@@ -1,4 +1,4 @@
-SELECT production_year, COUNT(*) 
+SELECT P.production_year, COUNT(*)
   FROM PRODUCTION P 
   WHERE P.kind LIKE '%movie%' 
   GROUP BY P.production_year 
@@ -32,10 +32,10 @@ SELECT MIN(height), MAX(height), AVG(height)
   
 
 SELECT DISTINCT P.id, P.name, Prod.id, Prod.title
-FROM PERSON P, PRODUCTION Prod, 
+ FROM PERSON P, PRODUCTION Prod,
   PRODUCTION_CAST Pc1 INNER JOIN PRODUCTION_CAST Pc2 ON 
     (Pc1.person_id = Pc2.person_id AND Pc1.production_id = Pc2.production_id AND (Pc1.role LIKE '%actor%' OR Pc1.role LIKE '%actress') AND Pc2.role LIKE '%director%')
-WHERE Prod.id = Pc1.production_id AND P.id = Pc1.person_id AND Prod.kind LIKE 'movie';
+ WHERE Prod.id = Pc1.production_id AND P.id = Pc1.person_id AND Prod.kind LIKE 'movie';
 
 
 

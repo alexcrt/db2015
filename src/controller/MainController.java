@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.sql.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static java.util.stream.Collectors.toList;
 
@@ -32,6 +34,8 @@ import static java.util.stream.Collectors.toList;
  * Created by alex on 20.04.15.
  */
 public class MainController implements Initializable {
+
+    private static final Logger logger = Logger.getLogger(MainController.class.getName());
 
     private Connection con;
 
@@ -53,7 +57,7 @@ public class MainController implements Initializable {
     @FXML
     private ComboBox<PreComputedQueries> queryComboBox;
     @FXML
-    private Label queryNameLabel;
+    private TextArea queryNameArea;
     @FXML
     private Button executeQueryButton;
 
@@ -80,9 +84,9 @@ public class MainController implements Initializable {
             queryComboBox.setItems(FXCollections.observableArrayList(preComputedQueries));
 
             SelectionModel<PreComputedQueries> selectionModel = queryComboBox.getSelectionModel();
-            queryComboBox.setOnAction(v -> queryNameLabel.setText(selectionModel.getSelectedItem().getQuery()));
+            queryComboBox.setOnAction(v -> queryNameArea.setText(selectionModel.getSelectedItem().getQuery()));
             selectionModel.selectFirst();
-            queryNameLabel.setText(selectionModel.getSelectedItem().getQuery());
+            queryNameArea.setText(selectionModel.getSelectedItem().getQuery());
 
             executeQueryButton.setOnAction(e -> executePreComputedQuery(selectionModel.getSelectedItem()));
 
@@ -98,6 +102,9 @@ public class MainController implements Initializable {
             protected Long call() throws Exception {
 
                 long nbRows = -1;
+
+                logger.log(Level.INFO, query.getQuery());
+
                 try(ResultSet rs = con.prepareStatement(query.getQuery()).executeQuery()) {
                     ResultSetMetaData metaData = rs.getMetaData();
 
