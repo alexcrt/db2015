@@ -2,7 +2,11 @@ package controller;
 
 import database.Database;
 import javafx.application.Platform;
+import javafx.beans.InvalidationListener;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.adapter.JavaBeanStringPropertyBuilder;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableStringValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -15,13 +19,14 @@ import javafx.scene.control.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import model.Model;
+import model.PreComputedQueries;
 
 import java.io.IOException;
 import java.net.URL;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * Created by alex on 20.04.15.
@@ -30,6 +35,7 @@ public class MainController implements Initializable {
 
     private Connection con;
 
+    //Tab 1
     @FXML
     private TableView<Model> dataTableView;
     @FXML
@@ -41,7 +47,16 @@ public class MainController implements Initializable {
 
     private final ObservableList<Model> tableViewList = FXCollections.observableArrayList();
 
-    @Override
+    //Tab 2
+    @FXML
+    private ComboBox<PreComputedQueries> queryComboBox;
+    @FXML
+    private Label queryNameLabel;
+    @FXML
+    private Button executeQueryButton;
+
+    private final List<PreComputedQueries> preComputedQueries = Arrays.asList(PreComputedQueries.values());
+
     public void initialize(URL location, ResourceBundle resources) {
         try {
             con = Database.getConnection();
@@ -54,9 +69,17 @@ public class MainController implements Initializable {
             }
             resultSet.close();
             tablesNameComboBox.setItems(list);
-            tablesNameComboBox.setValue(list.get(0));
+            tablesNameComboBox.getSelectionModel().selectFirst();
 
             searchAnyTextButton.setOnAction(e -> searchFieldFromTable(tablesNameComboBox.getValue()));
+
+            queryComboBox.setItems(FXCollections.observableArrayList(preComputedQueries));
+
+            SelectionModel<PreComputedQueries> selectionModel = queryComboBox.getSelectionModel();
+            queryComboBox.setOnAction(v -> queryNameLabel.setText(selectionModel.getSelectedItem().getQuery()));
+            selectionModel.selectFirst();
+            queryNameLabel.setText(selectionModel.getSelectedItem().getQuery());
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
