@@ -5,8 +5,8 @@ package model;
  */
 public enum PreComputedQueries {
 
-    MAX_BY("Max by", "Select * FROM *"),
-    MIN_BY("Min by", "Select *2 FROM *2");
+    MAX_BY("Max by", "Select * FROM PERSON WHERE ROWNUM <= 10"),
+    MIN_BY("Min by", "Select * FROM COMPANY WHERE ROWNUM <= 10");
 
     private String description;
     private String query;

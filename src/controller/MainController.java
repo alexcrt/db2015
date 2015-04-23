@@ -49,11 +49,15 @@ public class MainController implements Initializable {
 
     //Tab 2
     @FXML
+    private TableView<Model> queryResultsTableView;
+    @FXML
     private ComboBox<PreComputedQueries> queryComboBox;
     @FXML
     private Label queryNameLabel;
     @FXML
     private Button executeQueryButton;
+
+    private final ObservableList<Model> queryResultsViewList = FXCollections.observableArrayList();
 
     private final List<PreComputedQueries> preComputedQueries = Arrays.asList(PreComputedQueries.values());
 
@@ -80,9 +84,56 @@ public class MainController implements Initializable {
             selectionModel.selectFirst();
             queryNameLabel.setText(selectionModel.getSelectedItem().getQuery());
 
+            executeQueryButton.setOnAction(e -> executePreComputedQuery(selectionModel.getSelectedItem()));
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    private void executePreComputedQuery(PreComputedQueries query) {
+
+        Task<Long> fetchingDatasTask = new Task<Long>() {
+            @Override
+            protected Long call() throws Exception {
+
+                long nbRows = -1;
+                try(ResultSet rs = con.prepareStatement(query.getQuery()).executeQuery()) {
+                    ResultSetMetaData metaData = rs.getMetaData();
+
+                    List<TableColumn<Model, String>> tableColumns = new ArrayList<>();
+                    for (int i = 1; i <= metaData.getColumnCount(); i++) {
+                        int index = i;
+                        TableColumn<Model, String> column = new TableColumn<>(metaData.getColumnName(i));
+                        column.setCellValueFactory(e -> new SimpleStringProperty(String.valueOf(e.getValue().getObject(index - 1))));
+                        tableColumns.add(column);
+                    }
+
+                    //Update from UI Thread
+                    Platform.runLater(() -> queryResultsTableView.getColumns().setAll(tableColumns));
+
+                    int num = 0;
+                    queryResultsViewList.clear();
+
+                    while (rs.next()) {
+                        updateMessage("Fetching row " + num++);
+                        updateProgress(num, nbRows);
+                        List<Object> res = new ArrayList<>();
+                        for (int i = 1; i <= metaData.getColumnCount(); i++) {
+                            res.add(rs.getObject(i));
+                        }
+                        queryResultsViewList.add(new Model(res));
+                    }
+                    queryResultsTableView.setItems(queryResultsViewList);
+                }
+
+                return nbRows;
+            }
+        };
+
+        Scene scene = (Scene) ((Button) executeQueryButton).getScene();
+        Stage stage = (Stage) scene.getWindow();
+        startFetchingTask(stage, fetchingDatasTask);
     }
 
     private void searchFieldFromTable(String tableName) {
@@ -122,7 +173,7 @@ public class MainController implements Initializable {
 
                     while (rs.next()) {
                         updateMessage("Fetching row " + num++);
-                        updateProgress(num, nbRows);
+                        //updateProgress(num, nbRows);
                         List<Object> res = new ArrayList<>();
                         for (int i = 1; i <= metaData.getColumnCount(); i++) {
                             res.add(rs.getObject(i));
