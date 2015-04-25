@@ -97,11 +97,9 @@ public class MainController implements Initializable {
 
     private void executePreComputedQuery(PreComputedQueries query) {
 
-        Task<Long> fetchingDatasTask = new Task<Long>() {
+        Task<Void> fetchingDatasTask = new Task<Void>() {
             @Override
-            protected Long call() throws Exception {
-
-                long nbRows = -1;
+            protected Void call() throws Exception {
 
                 logger.log(Level.INFO, query.getQuery());
 
@@ -124,7 +122,6 @@ public class MainController implements Initializable {
 
                     while (rs.next()) {
                         updateMessage("Fetching row " + num++);
-                        updateProgress(num, nbRows);
                         List<Object> res = new ArrayList<>();
                         for (int i = 1; i <= metaData.getColumnCount(); i++) {
                             res.add(rs.getObject(i));
@@ -134,7 +131,7 @@ public class MainController implements Initializable {
                     queryResultsTableView.setItems(queryResultsViewList);
                 }
 
-                return nbRows;
+                return null;
             }
         };
 
@@ -151,17 +148,31 @@ public class MainController implements Initializable {
             alert.showAndWait();
             return;
         }
-        Task<Long> fetchingDatasTask = new Task<Long>() {
+        Task<Void> fetchingDatasTask = new Task<Void>() {
             @Override
-            protected Long call() throws Exception {
+            protected Void call() throws Exception {
 
-                long nbRows = -1;
-                try(ResultSet rs = con.prepareStatement("Select count(1) From " + tableName).executeQuery()) {
-                    rs.next();
-                    nbRows = rs.getLong(1);
+                String wantedQuery = "Select * From " + tableName + " WHERE";
+
+                PreparedStatement preparedStatement;
+                try(ResultSet rsColumns = columnsForTable(tableName)) {
+                    String keyword = keywordField.getText();
+
+                    int limit = 0;
+                    while (rsColumns.next()) {
+                        wantedQuery += " " + rsColumns.getString(1) + " LIKE ? OR";
+                        limit++;
+                    }
+                    wantedQuery = wantedQuery.substring(0, wantedQuery.length()-3);
+
+                    preparedStatement = con.prepareStatement(wantedQuery);
+
+                    for(int i = 1; i <= limit; i++) {;
+                        preparedStatement.setString(i, "'%"+keyword+"%'");
+                    }
                 }
 
-                try(ResultSet rs = con.prepareStatement("Select * From " + tableName + " WHERE ROWNUM <= 10").executeQuery()) {
+                try(ResultSet rs = preparedStatement.executeQuery()) {
                     ResultSetMetaData metaData = rs.getMetaData();
 
                     List<TableColumn<Model, String>> tableColumns = new ArrayList<>();
@@ -190,7 +201,7 @@ public class MainController implements Initializable {
                     dataTableView.setItems(tableViewList);
                 }
 
-                return nbRows;
+                return null;
             }
         };
 
@@ -199,7 +210,14 @@ public class MainController implements Initializable {
         startFetchingTask(stage, fetchingDatasTask);
     }
 
-    private void startFetchingTask(Stage owner, Task<Long> fetchingDatasTask) {
+    private ResultSet columnsForTable(String tableName) throws SQLException {
+        String query = "Select column_name From USER_TAB_COLUMNS WHERE table_name = ?";
+        PreparedStatement preparedStatement = con.prepareStatement(query);
+        preparedStatement.setString(1, tableName);
+        return preparedStatement.executeQuery();
+    }
+
+    private void startFetchingTask(Stage owner, Task<Void> fetchingDatasTask) {
         try {
             Stage progressStage = new Stage();
 
