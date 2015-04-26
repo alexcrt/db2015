@@ -76,6 +76,10 @@ public class MainController implements Initializable {
                 list.add(resultSet.getString(1));
             }
             resultSet.close();
+
+            dataTableView.setPlaceholder(new Label("No datas in the table"));
+            queryResultsTableView.setPlaceholder(new Label("No datas in the table"));
+
             tablesNameComboBox.setItems(list);
             tablesNameComboBox.getSelectionModel().selectFirst();
 
