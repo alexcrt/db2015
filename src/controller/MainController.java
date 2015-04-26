@@ -35,7 +35,7 @@ import static java.util.stream.Collectors.toList;
  */
 public class MainController implements Initializable {
 
-    private static final Logger logger = Logger.getLogger(MainController.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(MainController.class.getName());
 
     private Connection con;
 
@@ -101,7 +101,7 @@ public class MainController implements Initializable {
             @Override
             protected Void call() throws Exception {
 
-                logger.log(Level.INFO, query.getQuery());
+                LOGGER.log(Level.INFO, query.getQuery());
 
                 try(ResultSet rs = con.prepareStatement(query.getQuery()).executeQuery()) {
                     ResultSetMetaData metaData = rs.getMetaData();
@@ -117,7 +117,7 @@ public class MainController implements Initializable {
                     //Update from UI Thread
                     Platform.runLater(() -> queryResultsTableView.getColumns().setAll(tableColumns));
 
-                    int num = 0;
+                    long num = 0;
                     queryResultsViewList.clear();
 
                     while (rs.next()) {
@@ -128,6 +128,8 @@ public class MainController implements Initializable {
                         }
                         queryResultsViewList.add(new Model(res));
                     }
+                    LOGGER.log(Level.INFO, "Fetched " + num + " rows");
+
                     queryResultsTableView.setItems(queryResultsViewList);
                 }
 
@@ -141,38 +143,25 @@ public class MainController implements Initializable {
     }
 
     private void searchFieldFromTable(String tableName) {
-        if (keywordField.getText().isEmpty()) {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Search field cannot be empty");
-            alert.setHeaderText("You need to provide a keyword");
-            alert.showAndWait();
-            return;
-        }
-        Task<Void> fetchingDatasTask = new Task<Void>() {
+        Task<Void> fetchingDatasTask = keywordField.getText().isEmpty() ?
+                taskAll(tableName) : taskWithKeyword(tableName, keywordField.getText());
+
+
+        Scene scene = (Scene) ((Button) searchAnyTextButton).getScene();
+        Stage stage = (Stage) scene.getWindow();
+        startFetchingTask(stage, fetchingDatasTask);
+    }
+
+    private Task<Void> taskAll(String tableName) {
+        return new Task<Void>() {
             @Override
             protected Void call() throws Exception {
 
-                String wantedQuery = "Select * From " + tableName + " WHERE";
+                String wantedQuery = "Select * From " + tableName;
 
-                PreparedStatement preparedStatement;
-                try(ResultSet rsColumns = columnsForTable(tableName)) {
-                    String keyword = keywordField.getText();
+                PreparedStatement preparedStatement = con.prepareStatement(wantedQuery);
 
-                    int limit = 0;
-                    while (rsColumns.next()) {
-                        wantedQuery += " " + rsColumns.getString(1) + " LIKE ? OR";
-                        limit++;
-                    }
-                    wantedQuery = wantedQuery.substring(0, wantedQuery.length()-3);
-
-                    preparedStatement = con.prepareStatement(wantedQuery);
-
-                    for(int i = 1; i <= limit; i++) {;
-                        preparedStatement.setString(i, "'%"+keyword+"%'");
-                    }
-                }
-
-                try(ResultSet rs = preparedStatement.executeQuery()) {
+                try (ResultSet rs = preparedStatement.executeQuery()) {
                     ResultSetMetaData metaData = rs.getMetaData();
 
                     List<TableColumn<Model, String>> tableColumns = new ArrayList<>();
@@ -186,28 +175,116 @@ public class MainController implements Initializable {
                     //Update from UI Thread
                     Platform.runLater(() -> dataTableView.getColumns().setAll(tableColumns));
 
-                    int num = 0;
+                    long num = 0;
+                    long nbRows = 0;
                     tableViewList.clear();
+
+                    String countQuery = "Select count(*) From " + tableName;
+
+                    try(ResultSet countResultSet = con.prepareStatement(countQuery).executeQuery()){
+                        if(!countResultSet.next()) {
+                            throw new SQLException("COUNT should give a value");
+                        }
+                        nbRows = countResultSet.getLong(1);
+                    }
 
                     while (rs.next()) {
                         updateMessage("Fetching row " + num++);
-                        //updateProgress(num, nbRows);
+                        updateProgress(num, nbRows);
                         List<Object> res = new ArrayList<>();
                         for (int i = 1; i <= metaData.getColumnCount(); i++) {
                             res.add(rs.getObject(i));
                         }
                         tableViewList.add(new Model(res));
                     }
+
+                    LOGGER.log(Level.INFO, "Fetched " + num + " rows");
+
                     dataTableView.setItems(tableViewList);
                 }
 
                 return null;
             }
         };
+    }
 
-        Scene scene = (Scene) ((Button) searchAnyTextButton).getScene();
-        Stage stage = (Stage) scene.getWindow();
-        startFetchingTask(stage, fetchingDatasTask);
+    private Task<Void> taskWithKeyword(String tableName, String keyword) {
+        return new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+
+                updateMessage("Server - Preparing query");
+
+                String placeHolder = "Select * From ";
+                String buildingQuery = tableName + " WHERE";
+                int limit = 0;
+
+                PreparedStatement preparedStatement;
+                try (ResultSet rsColumns = columnsForTable(tableName)) {
+
+                    while (rsColumns.next()) {
+                        buildingQuery += " " + rsColumns.getString(1) + " LIKE ? OR";
+                        limit++;
+                    }
+                    buildingQuery = buildingQuery.substring(0, buildingQuery.length() - 3);
+
+                    preparedStatement = con.prepareStatement(placeHolder+buildingQuery);
+
+                    for (int i = 1; i <= limit; i++) {
+                        preparedStatement.setString(i, "%" + keyword + "%");
+                    }
+                }
+
+                try (ResultSet rs = preparedStatement.executeQuery()) {
+                    ResultSetMetaData metaData = rs.getMetaData();
+
+                    List<TableColumn<Model, String>> tableColumns = new ArrayList<>();
+                    for (int i = 1; i <= metaData.getColumnCount(); i++) {
+                        int index = i;
+                        TableColumn<Model, String> column = new TableColumn<>(metaData.getColumnName(i));
+                        column.setCellValueFactory(e -> new SimpleStringProperty(String.valueOf(e.getValue().getObject(index - 1))));
+                        tableColumns.add(column);
+                    }
+
+                    //Update from UI Thread
+                    Platform.runLater(() -> dataTableView.getColumns().setAll(tableColumns));
+
+                    long num = 0;
+                    long nbRows = 0;
+                    tableViewList.clear();
+
+                    String countQuery = "Select count(*) From " + buildingQuery;
+                    PreparedStatement countPreparedStatement = con.prepareStatement(countQuery);
+
+                    for (int i = 1; i <= limit; i++) {
+                        countPreparedStatement.setString(i, "%" + keyword + "%");
+                    }
+
+                    try(ResultSet countResultSet = countPreparedStatement.executeQuery()){
+                        if(!countResultSet.next()) {
+                            throw new SQLException("COUNT should give a value");
+                        }
+                        nbRows = countResultSet.getLong(1);
+                    }
+
+                    while (rs.next()) {
+                        updateMessage("Fetching row " + num++);
+                        updateProgress(num, nbRows);
+                        List<Object> res = new ArrayList<>();
+                        for (int i = 1; i <= metaData.getColumnCount(); i++) {
+                            res.add(rs.getObject(i));
+                        }
+                        tableViewList.add(new Model(res));
+                    }
+
+                    LOGGER.log(Level.INFO, "Fetched " + num + " rows");
+
+                    dataTableView.setItems(tableViewList);
+                }
+
+                return null;
+            }
+        };
     }
 
     private ResultSet columnsForTable(String tableName) throws SQLException {
@@ -246,6 +323,7 @@ public class MainController implements Initializable {
             });
 
             ProgressBar progressBar = (ProgressBar) progressScene.lookup("#progressBarTask");
+
             progressBar.progressProperty().bind(fetchingDatasTask.progressProperty());
 
             Label label = (Label) progressScene.lookup("#bottomLabel");
