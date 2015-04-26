@@ -1,0 +1,27 @@
+Changes in architecture  :
+
+As you can see the schema changed a bit, some changes are following your advices and some changes were forced by problems we had during the parsing and insertion of the data.
+First, the table QUOTES has been removed following the feedback we got on the first deliverable. Now the quotes are just a field in the PERSON table.
+Another big changes is that we shifted from MySQL to Oracle. So for example, the YEAR type of MySQL apparently does not exist in Oracle databases, so all YEAR fields are now INTEGER fields.
+Then we optimized a bit the character strings by using the NVARCHAR2 type which is a dynamic length type. It can make search slower as the DBMS has to loop over every record of previous columns to get the wanted value (it cannot use an offset as it would with fixed-size column). But, in the case where the length of our data varies a lot in a same column it is extremely useful in order to not waste space.
+Finally, again following the advices given to us on the first deliverable, we removed ENUMs and replaced them by NVARCHAR2 fields.
+The changes in the size of each fields are empiric, we expanded a field each time a new data from the files was to big to fit in the current field's size.
+
+For the rest, the main architecture of our schema remains the same.
+
+
+
+
+
+Parsing :
+
+To parse the CSV files, we wrote a java program that reads and parses each CSV and for each CSV inserts its records into the tables. We used the batch insert functionnality to decrease network requests and give more job to the database than the network. We faced some problems during the parsing, especially with the "height" field of the PERSON entity. Some values in this field were in feet and inches and some were in centimeters. To handle this problem, we converted every field in feet/inches to centimeters (because it is the metric we are used to use here), we do this convertion during the parsing. Some data are clearly wrong : there is a person who measures 1.50 cm (without any conversion, it is like this in the database), but we do not think that we have to correct the data given to us, so we let it like this.
+The rest of the parsing was pretty simple, we struggled a bit on the dates which are following the US format and our default LOCALE which is to European format, this caused some excpetions in Java, , but it was not a big deal and the problem was easily handled at the end.
+
+The big problem we had was the time it takes to insert data in a distant database, especially for the PRODUCTION_CAST table which is huge. We handled this by creating this table without any constraint and by using a wired connection. We obviously added the constraints to the table as soon as the table was filled up.
+
+
+
+Queries :
+
+Here we mostly use advantage of the nested queries to simplify and make the SQL code smaller. Not much to say on each query. The second query is an interesting one : there is no "LIMIT" keyword in Oracle SQL like in MySQL SQL, so we had to find the Oracle's way to do this. Apparently this way of selecting only x results is pretty new in Oracle. 
