@@ -6,13 +6,13 @@
 
 <TabPane xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.MainController">
    <tabs>
-      <Tab closable="false" text="Tables view" style="-fx-focus-color: transparent; -fx-faint-focus-color: transparent;">
+      <Tab closable="false" style="-fx-focus-color: transparent; -fx-faint-focus-color: transparent;" text="Tables view">
          <content>
             <SplitPane dividerPositions="0.717391304347826" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0">
               <items>
                 <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" prefHeight="398.0" prefWidth="433.0">
                      <children>
-                        <TableView fx:id="dataTableView" style="-fx-focus-color: transparent; -fx-faint-focus-color: transparent;" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="354.0" prefWidth="425.0" AnchorPane.bottomAnchor="46.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="0.0" />
+                        <TableView fx:id="dataTableView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="354.0" prefWidth="425.0" style="-fx-focus-color: transparent; -fx-faint-focus-color: transparent;" AnchorPane.bottomAnchor="46.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="0.0" />
                         <Pagination fx:id="paginationTab1" layoutY="347.0" prefHeight="52.0" prefWidth="424.0" />
                      </children>
                 </AnchorPane>
@@ -29,13 +29,13 @@
             </SplitPane>
          </content>
       </Tab>
-      <Tab closable="false" text="Pre-computed queries" style="-fx-focus-color: transparent; -fx-faint-focus-color: transparent;">
+      <Tab closable="false" style="-fx-focus-color: transparent; -fx-faint-focus-color: transparent;" text="Pre-computed queries">
          <content>
             <SplitPane dividerPositions="0.6916666666666667" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0">
                <items>
                   <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" prefHeight="398.0" prefWidth="433.0">
                      <children>
-                        <TableView fx:id="queryResultsTableView" style="-fx-focus-color: transparent; -fx-faint-focus-color: transparent;" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="398.0" prefWidth="425.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                        <TableView fx:id="queryResultsTableView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="398.0" prefWidth="425.0" style="-fx-focus-color: transparent; -fx-faint-focus-color: transparent;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                      </children>
                   </AnchorPane>
                   <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
