@@ -109,6 +109,10 @@ public class MainController implements Initializable {
                         !keywordField.getText().equals(lastKeywordSupplied)) {
                     lastTableNameSelected = tablesNameComboBox.getValue();
                     lastKeywordSupplied = keywordField.getText();
+
+                    paginationTab1.setCurrentPageIndex(0);
+                    paginationTab1.setDisable(true);
+
                     cache.clear();
                 }
                 searchFieldFromTable(tablesNameComboBox.getValue(), 0);
@@ -182,7 +186,7 @@ public class MainController implements Initializable {
             return;
         }
         Task<Void> fetchingDatasTask = keywordField.getText().isEmpty() ?
-                taskAll(tableName, from) : taskWithKeyword(tableName, keywordField.getText());
+                taskAll(tableName, from) : taskWithKeyword(tableName, keywordField.getText(), from);
 
 
         Scene scene = (Scene) ((Button) searchAnyTextButton).getScene();
@@ -225,7 +229,7 @@ public class MainController implements Initializable {
                         if (!countResultSet.next()) {
                             throw new SQLException("COUNT should give a value");
                         }
-                        int nbPages = (int) (countResultSet.getLong(1) / ROWS_PER_PAGE);
+                        int nbPages = (int) (countResultSet.getLong(1) / ROWS_PER_PAGE) + 1;
                         Platform.runLater(() -> paginationTab1.setPageCount(nbPages));
                     }
 
@@ -249,7 +253,7 @@ public class MainController implements Initializable {
         };
     }
 
-    private Task<Void> taskWithKeyword(String tableName, String keyword) {
+    private Task<Void> taskWithKeyword(String tableName, String keyword, int from) {
         return new Task<Void>() {
             @Override
             protected Void call() throws Exception {
@@ -269,11 +273,14 @@ public class MainController implements Initializable {
                     }
                     buildingQuery = buildingQuery.substring(0, buildingQuery.length() - 3);
 
-                    preparedStatement = con.prepareStatement(placeHolder + buildingQuery);
+                    preparedStatement = con.prepareStatement(placeHolder + buildingQuery + "Order by ID OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
 
                     for (int i = 1; i <= limit; i++) {
                         preparedStatement.setString(i, "%" + keyword + "%");
                     }
+                    preparedStatement.setInt(limit+1, from);
+                    preparedStatement.setInt(limit+2, ROWS_PER_PAGE);
+
                 }
 
                 try (ResultSet rs = preparedStatement.executeQuery()) {
@@ -291,7 +298,6 @@ public class MainController implements Initializable {
                     Platform.runLater(() -> dataTableView.getColumns().setAll(tableColumns));
 
                     long num = 0;
-                    long nbRows = 0;
 
                     final ObservableList<Model> tableViewList = FXCollections.observableArrayList();
 
@@ -306,12 +312,13 @@ public class MainController implements Initializable {
                         if (!countResultSet.next()) {
                             throw new SQLException("COUNT should give a value");
                         }
-                        nbRows = countResultSet.getLong(1);
+                        int nbPages = (int) (countResultSet.getLong(1) / ROWS_PER_PAGE + 1);
+                        Platform.runLater(() -> paginationTab1.setPageCount(nbPages));
                     }
 
                     while (rs.next()) {
                         updateMessage("Fetching row " + num++);
-                        updateProgress(num, nbRows);
+                        updateProgress(num, ROWS_PER_PAGE);
                         List<Object> res = new ArrayList<>();
                         for (int i = 1; i <= metaData.getColumnCount(); i++) {
                             res.add(rs.getObject(i));
