@@ -238,7 +238,17 @@ public class MainController implements Initializable {
                         updateProgress(num, ROWS_PER_PAGE);
                         List<Object> res = new ArrayList<>();
                         for (int i = 1; i <= metaData.getColumnCount(); i++) {
-                            res.add(rs.getObject(i));
+                            if (metaData.getColumnType(i) == Types.CLOB) {
+                                Clob clob = rs.getClob(i);
+                                if (clob != null) {
+                                    int length = clob.length() > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) clob.length();
+                                    res.add(clob.getSubString(1L, length));
+                                } else {
+                                    res.add("null");
+                                }
+                            } else {
+                                res.add(rs.getObject(i));
+                            }
                         }
                         tableViewList.add(new Model(res));
                     }
@@ -278,8 +288,8 @@ public class MainController implements Initializable {
                     for (int i = 1; i <= limit; i++) {
                         preparedStatement.setString(i, "%" + keyword + "%");
                     }
-                    preparedStatement.setInt(limit+1, from);
-                    preparedStatement.setInt(limit+2, ROWS_PER_PAGE);
+                    preparedStatement.setInt(limit + 1, from);
+                    preparedStatement.setInt(limit + 2, ROWS_PER_PAGE);
 
                 }
 
@@ -321,7 +331,17 @@ public class MainController implements Initializable {
                         updateProgress(num, ROWS_PER_PAGE);
                         List<Object> res = new ArrayList<>();
                         for (int i = 1; i <= metaData.getColumnCount(); i++) {
-                            res.add(rs.getObject(i));
+                            if (metaData.getColumnType(i) == Types.CLOB) {
+                                Clob clob = rs.getClob(i);
+                                if (clob != null) {
+                                    int length = clob.length() > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) clob.length();
+                                    res.add(clob.getSubString(1L, length));
+                                } else {
+                                    res.add("null");
+                                }
+                            } else {
+                                res.add(rs.getObject(i));
+                            }
                         }
                         tableViewList.add(new Model(res));
                     }
