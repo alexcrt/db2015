@@ -2,11 +2,7 @@ package controller;
 
 import database.Database;
 import javafx.application.Platform;
-import javafx.beans.InvalidationListener;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.adapter.JavaBeanStringPropertyBuilder;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableStringValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -28,28 +24,41 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static java.util.stream.Collectors.toList;
-
 /**
  * Created by alex on 20.04.15.
  */
 public class MainController implements Initializable {
 
     private static final Logger LOGGER = Logger.getLogger(MainController.class.getName());
+    private static final int ROWS_PER_PAGE = 10_000;
+
+    private static final int MAX_ENTRIES = 50;
+
+    private final Map<Integer, ObservableList<Model>> cache =
+            new LinkedHashMap<Integer, ObservableList<Model>>(MAX_ENTRIES + 1, .75F, true) {
+                public boolean removeEldestEntry(Map.Entry eldest) {
+                    return size() > MAX_ENTRIES;
+                }
+            };
 
     private Connection con;
+
+    private String lastTableNameSelected;
+    private String lastKeywordSupplied;
 
     //Tab 1
     @FXML
     private TableView<Model> dataTableView;
+
+    @FXML
+    private Pagination paginationTab1;
+
     @FXML
     private TextField keywordField;
     @FXML
     private ComboBox<String> tablesNameComboBox;
     @FXML
     private Button searchAnyTextButton;
-
-    private final ObservableList<Model> tableViewList = FXCollections.observableArrayList();
 
     //Tab 2
     @FXML
@@ -71,15 +80,43 @@ public class MainController implements Initializable {
             ObservableList<String> list = FXCollections.observableArrayList();
             String query = "SELECT table_name FROM user_tables";
             PreparedStatement preparedStatement = con.prepareStatement(query);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                list.add(resultSet.getString(1));
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    list.add(resultSet.getString(1));
+                }
             }
-            resultSet.close();
+
+            dataTableView.setPlaceholder(new Label("No datas in the table"));
+
+            paginationTab1.setDisable(true);
+            paginationTab1.currentPageIndexProperty().addListener((obs, oldIndex, newIndex) -> {
+                cache.putIfAbsent(oldIndex.intValue(), dataTableView.getItems());
+                if (cache.containsKey(newIndex.intValue())) {
+                    dataTableView.setItems(cache.get(newIndex.intValue()));
+                } else {
+                    searchFieldFromTable(tablesNameComboBox.getValue(), newIndex.intValue() * ROWS_PER_PAGE);
+                }
+            });
+
+            queryResultsTableView.setPlaceholder(new Label("No datas in the table"));
+
             tablesNameComboBox.setItems(list);
             tablesNameComboBox.getSelectionModel().selectFirst();
 
-            searchAnyTextButton.setOnAction(e -> searchFieldFromTable(tablesNameComboBox.getValue()));
+            searchAnyTextButton.setOnAction(e -> {
+                if (!tablesNameComboBox.getValue().equals(lastTableNameSelected) ||
+                        !keywordField.getText().equals(lastKeywordSupplied)) {
+                    lastTableNameSelected = tablesNameComboBox.getValue();
+                    lastKeywordSupplied = keywordField.getText();
+
+                    paginationTab1.setCurrentPageIndex(0);
+                    paginationTab1.setDisable(true);
+
+                    cache.clear();
+                }
+                searchFieldFromTable(tablesNameComboBox.getValue(), 0);
+            });
 
             queryComboBox.setItems(FXCollections.observableArrayList(preComputedQueries));
 
@@ -89,6 +126,7 @@ public class MainController implements Initializable {
             queryNameArea.setText(selectionModel.getSelectedItem().getQuery());
 
             executeQueryButton.setOnAction(e -> executePreComputedQuery(selectionModel.getSelectedItem()));
+
 
         } catch (SQLException e) {
             e.printStackTrace();
@@ -103,7 +141,7 @@ public class MainController implements Initializable {
 
                 LOGGER.log(Level.INFO, query.getQuery());
 
-                try(ResultSet rs = con.prepareStatement(query.getQuery()).executeQuery()) {
+                try (ResultSet rs = con.prepareStatement(query.getQuery()).executeQuery()) {
                     ResultSetMetaData metaData = rs.getMetaData();
 
                     List<TableColumn<Model, String>> tableColumns = new ArrayList<>();
@@ -142,9 +180,13 @@ public class MainController implements Initializable {
         startFetchingTask(stage, fetchingDatasTask);
     }
 
-    private void searchFieldFromTable(String tableName) {
+    private void searchFieldFromTable(String tableName, int from) {
+        if (cache.containsKey(from / ROWS_PER_PAGE)) {
+            dataTableView.setItems(cache.get(from / ROWS_PER_PAGE));
+            return;
+        }
         Task<Void> fetchingDatasTask = keywordField.getText().isEmpty() ?
-                taskAll(tableName) : taskWithKeyword(tableName, keywordField.getText());
+                taskAll(tableName, from) : taskWithKeyword(tableName, keywordField.getText(), from);
 
 
         Scene scene = (Scene) ((Button) searchAnyTextButton).getScene();
@@ -152,14 +194,16 @@ public class MainController implements Initializable {
         startFetchingTask(stage, fetchingDatasTask);
     }
 
-    private Task<Void> taskAll(String tableName) {
+    private Task<Void> taskAll(String tableName, int from) {
         return new Task<Void>() {
             @Override
             protected Void call() throws Exception {
 
-                String wantedQuery = "Select * From " + tableName;
+                String wantedQuery = "SELECT * FROM " + tableName + " ORDER BY ID OFFSET ? ROWS FETCH NEXT ? ROWS ONLY";
 
                 PreparedStatement preparedStatement = con.prepareStatement(wantedQuery);
+                preparedStatement.setInt(1, from);
+                preparedStatement.setInt(2, ROWS_PER_PAGE);
 
                 try (ResultSet rs = preparedStatement.executeQuery()) {
                     ResultSetMetaData metaData = rs.getMetaData();
@@ -176,24 +220,35 @@ public class MainController implements Initializable {
                     Platform.runLater(() -> dataTableView.getColumns().setAll(tableColumns));
 
                     long num = 0;
-                    long nbRows = 0;
-                    tableViewList.clear();
+
+                    final ObservableList<Model> tableViewList = FXCollections.observableArrayList();
 
                     String countQuery = "Select count(*) From " + tableName;
 
-                    try(ResultSet countResultSet = con.prepareStatement(countQuery).executeQuery()){
-                        if(!countResultSet.next()) {
+                    try (ResultSet countResultSet = con.prepareStatement(countQuery).executeQuery()) {
+                        if (!countResultSet.next()) {
                             throw new SQLException("COUNT should give a value");
                         }
-                        nbRows = countResultSet.getLong(1);
+                        int nbPages = (int) (countResultSet.getLong(1) / ROWS_PER_PAGE) + 1;
+                        Platform.runLater(() -> paginationTab1.setPageCount(nbPages));
                     }
 
                     while (rs.next()) {
                         updateMessage("Fetching row " + num++);
-                        updateProgress(num, nbRows);
+                        updateProgress(num, ROWS_PER_PAGE);
                         List<Object> res = new ArrayList<>();
                         for (int i = 1; i <= metaData.getColumnCount(); i++) {
-                            res.add(rs.getObject(i));
+                            if (metaData.getColumnType(i) == Types.CLOB) {
+                                Clob clob = rs.getClob(i);
+                                if (clob != null) {
+                                    int length = clob.length() > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) clob.length();
+                                    res.add(clob.getSubString(1L, length));
+                                } else {
+                                    res.add("null");
+                                }
+                            } else {
+                                res.add(rs.getObject(i));
+                            }
                         }
                         tableViewList.add(new Model(res));
                     }
@@ -208,7 +263,7 @@ public class MainController implements Initializable {
         };
     }
 
-    private Task<Void> taskWithKeyword(String tableName, String keyword) {
+    private Task<Void> taskWithKeyword(String tableName, String keyword, int from) {
         return new Task<Void>() {
             @Override
             protected Void call() throws Exception {
@@ -228,11 +283,14 @@ public class MainController implements Initializable {
                     }
                     buildingQuery = buildingQuery.substring(0, buildingQuery.length() - 3);
 
-                    preparedStatement = con.prepareStatement(placeHolder+buildingQuery);
+                    preparedStatement = con.prepareStatement(placeHolder + buildingQuery + "Order by ID OFFSET ? ROWS FETCH NEXT ? ROWS ONLY");
 
                     for (int i = 1; i <= limit; i++) {
                         preparedStatement.setString(i, "%" + keyword + "%");
                     }
+                    preparedStatement.setInt(limit + 1, from);
+                    preparedStatement.setInt(limit + 2, ROWS_PER_PAGE);
+
                 }
 
                 try (ResultSet rs = preparedStatement.executeQuery()) {
@@ -250,8 +308,8 @@ public class MainController implements Initializable {
                     Platform.runLater(() -> dataTableView.getColumns().setAll(tableColumns));
 
                     long num = 0;
-                    long nbRows = 0;
-                    tableViewList.clear();
+
+                    final ObservableList<Model> tableViewList = FXCollections.observableArrayList();
 
                     String countQuery = "Select count(*) From " + buildingQuery;
                     PreparedStatement countPreparedStatement = con.prepareStatement(countQuery);
@@ -260,19 +318,30 @@ public class MainController implements Initializable {
                         countPreparedStatement.setString(i, "%" + keyword + "%");
                     }
 
-                    try(ResultSet countResultSet = countPreparedStatement.executeQuery()){
-                        if(!countResultSet.next()) {
+                    try (ResultSet countResultSet = countPreparedStatement.executeQuery()) {
+                        if (!countResultSet.next()) {
                             throw new SQLException("COUNT should give a value");
                         }
-                        nbRows = countResultSet.getLong(1);
+                        int nbPages = (int) (countResultSet.getLong(1) / ROWS_PER_PAGE + 1);
+                        Platform.runLater(() -> paginationTab1.setPageCount(nbPages));
                     }
 
                     while (rs.next()) {
                         updateMessage("Fetching row " + num++);
-                        updateProgress(num, nbRows);
+                        updateProgress(num, ROWS_PER_PAGE);
                         List<Object> res = new ArrayList<>();
                         for (int i = 1; i <= metaData.getColumnCount(); i++) {
-                            res.add(rs.getObject(i));
+                            if (metaData.getColumnType(i) == Types.CLOB) {
+                                Clob clob = rs.getClob(i);
+                                if (clob != null) {
+                                    int length = clob.length() > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) clob.length();
+                                    res.add(clob.getSubString(1L, length));
+                                } else {
+                                    res.add("null");
+                                }
+                            } else {
+                                res.add(rs.getObject(i));
+                            }
                         }
                         tableViewList.add(new Model(res));
                     }
@@ -308,7 +377,10 @@ public class MainController implements Initializable {
             progressStage.setOnCloseRequest(e -> fetchingDatasTask.cancel());
 
 
-            fetchingDatasTask.setOnSucceeded(e -> progressStage.close());
+            fetchingDatasTask.setOnSucceeded(e -> {
+                progressStage.close();
+                paginationTab1.setDisable(false);
+            });
 
             fetchingDatasTask.setOnFailed(e -> {
                 progressStage.close();
