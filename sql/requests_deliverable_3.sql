@@ -1,6 +1,7 @@
 
 
 -- Query b). Quite complex but if multiple years are the most productives, it returns them all.
+-- WARNING : The clause of P.name LIKE should be dynamic in app, so user can choose Person name.
 SELECT DISTINCT res2.y FROM (
   SELECT res1.y AS y, rank() OVER (ORDER BY res1.year_count DESC) AS ranking
   FROM (SELECT Prod.production_year AS y, 
@@ -13,6 +14,7 @@ WHERE res2.ranking = 1
 
 --Query c) Again here, if two companies have the same number of production in a year and a genre and they are the most productive this genre for this year
 --both companies are returned for that genre.
+--WARNING: same as previously but with production_year.
 SELECT * 
 FROM (SELECT res1.cname, res1.pgenre, RANK() OVER (PARTITION BY res1.pgenre ORDER BY res1.cnt DESC) AS cnt2
       FROM (SELECT DISTINCT C.name AS cname, Prod.genre AS pgenre, COUNT(*) OVER (PARTITION BY C.name, Prod.genre) AS cnt
@@ -32,6 +34,7 @@ ON a.prod_id = b.prod_id AND a.pname NOT LIKE b.pname
 
 
 --Query e). REALLLLLYYYYYYYY SLOW, will choose this one for questions on query optimization !
+--EXPLAIN PLAN FOR
 WITH n_prod_by_year AS
 (SELECT DISTINCT Prod.production_year AS pyear, COUNT(*) OVER (PARTITION BY Prod.production_year) AS prod_cnt
   FROM PRODUCTION Prod
