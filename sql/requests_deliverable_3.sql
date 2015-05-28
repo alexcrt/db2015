@@ -34,7 +34,6 @@ ON a.prod_id = b.prod_id AND a.pname NOT LIKE b.pname
 
 
 --Query e). REALLLLLYYYYYYYY SLOW, will choose this one for questions on query optimization !
---EXPLAIN PLAN FOR
 WITH n_prod_by_year AS
 (SELECT DISTINCT Prod.production_year AS pyear, COUNT(*) OVER (PARTITION BY Prod.production_year) AS prod_cnt
   FROM PRODUCTION Prod
@@ -49,6 +48,7 @@ n_actor_by_year AS
 SELECT n_actor_by_year.pyear, (n_actor_by_year.actor_cnt / n_prod_by_year.prod_cnt)
 FROM n_actor_by_year, n_prod_by_year
 WHERE n_actor_by_year.pyear = n_prod_by_year.pyear
+ORDER BY n_actor_by_year.pyear
 
 
 --Query f). Really fast ! cool!
@@ -58,7 +58,7 @@ WITH cnt AS
   COUNT(*) OVER (PARTITION BY Prod.series_id) AS episode_cnt
   FROM PRODUCTION Prod
   WHERE Prod.kind LIKE 'episode')
-SELECT (sum(cnt.episode_cnt) / sum(cnt.season_cnt)), AVG(cnt.episode_cnt, cnt.season_cnt)
+SELECT (sum(cnt.episode_cnt) / sum(cnt.season_cnt))
 FROM cnt
 
 
@@ -76,6 +76,7 @@ FROM cnt
 
 
 --Query h)
+--Returns series_id, application should get the names from the id by another request.
 SELECT res.sid
 FROM (WITH cnt AS
         (SELECT DISTINCT Prod.series_id AS sid, 
@@ -88,6 +89,7 @@ ORDER BY res.ranking OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY
 
 
 --Query i)
+--Same as before concerning the app.
 SELECT res2.sid
 FROM (SELECT res.sid, rank() OVER (ORDER BY res.n_episodes_per_seasons DESC) AS ranking
       FROM (SELECT cnt.sid AS sid,(cnt.episode_cnt / cnt.season_cnt) AS n_episodes_per_seasons
