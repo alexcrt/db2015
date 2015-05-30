@@ -106,6 +106,18 @@ FROM (SELECT res.sid, rank() OVER (ORDER BY res.n_episodes_per_seasons DESC) AS 
 ) res2
 ORDER BY res2.ranking OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY
 
+--Query k)
+-- not tv movies or video movies?
+SELECT *
+FROM (SELECT CompanyMoviesPerYear.*, RANK() OVER (PARTITION BY prodYear ORDER BY compCount DESC) as rn
+      FROM (SELECT prodYear, compId, COUNT(*) AS compCount
+            FROM (SELECT DISTINCT Prod.id AS prodId, Prod.production_year AS prodYear, Pcomp.company_id AS compId
+                  FROM PRODUCTION Prod, PRODUCTION_COMPANY Pcomp
+                  WHERE Prod.production_year IS NOT NULL AND Pcomp.production_id = Prod.id AND Prod.kind LIKE 'movie') res1
+            GROUP BY compId, prodYear) CompanyMoviesPerYear
+      )
+WHERE rn = 1 OR rn =  2 OR rn = 3
+
 --Query m)
 --Returns production_id and person_id, application should get the names from the id by another request.
 WITH altName AS
@@ -120,3 +132,5 @@ SELECT DISTINCT Pc.production_id, Pc.person_id, (1+altName.cntName)*(1+altTitle.
 FROM altName, altTitle, PRODUCTION_CAST Pc
 WHERE Pc.production_id = altTitle.prodId AND Pc.person_id = altName.peId
 ORDER BY degAmbiguity DESC OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY
+
+
