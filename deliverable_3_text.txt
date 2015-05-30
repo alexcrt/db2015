@@ -1,8 +1,0 @@
-b) 11443 ms : Cost mostly on hash joins. Logical, even if the SELECT on PERSON.name is pushed at bottom of execution tree to optimize the query plan, the table production_cast remains reaaallllly big. Hash join is a good choice as the join condition is on the primary keys.
-c) ~ 6000 ms for the first execution, then ~ 1100 ms when data is chached
-d) 9685 ms
-e) ~ 235000 - 240000 ms
-f) 5031 ms
-g) 4967 ms
-h) 5189 ms
-i) 5311 ms 

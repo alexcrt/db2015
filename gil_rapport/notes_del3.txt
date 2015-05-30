@@ -1,0 +1,34 @@
+QUESTION 3 :
+
+b) 11443 ms
+c) ~ 6000 ms for the first execution, then ~ 1100 ms when data is chached
+d) 9685 ms
+e) ~ 235000 - 240000 ms
+f) 5031 ms
+g) 4967 ms
+h) 5189 ms
+i) 5311 ms 
+
+Plan analysis for three queries :
+
+Query b) :
+
+The most expansive part of this plan is on the theta-join of PERSON with PRODUCTION_CAST on the person_id column. The PRODUCTION_CAST is the biggest table of the database, reading it fully to perform the job is already expansive. Indeed a full table scan is used here, with an index on the person_id column, an index scan could be used, which would optimize this part. An index on the PERSON(name) column is a good idea too in our opinion, as searching informations with just the name, or part or the name, of someone is a really common pattern. A hash join is used, if we look at the documentation of the EXPLAIN PLAN command, we learn that this join method is used by default when there is a join on a lot of rows. The most of the cost comes from this first join.
+The join with PRODUCTION is not as expansive, because the previous one returns a number of rows really smaller than the size of the PRODUCTION_CAST table and the PRODUCTION table itself is really not big in comparison. The generation of intermediate temporary views, the generation of the rank and the use of DISTINCT does not adds a lot of overhead according to the plan : the cost goes from 205k after the last join to 222k at the end of the plan, so this part of temporary view generation and ranking is not really expansive compared to the joins.
+
+Query c) :
+
+For this query, approximatly half of the the cost comes from reading tables and applying where clauses (again, indexes could be useful here). As in the previous query, another big part of the cost comes from the join with the PRODUCTION_CAST table, an index on this table would definitly help. For the rest of the query, hashing unique elements (DISTINCT clause), computing the RANK and making temporary views is not really expansive compared to the joins.
+
+Query f) :
+Here there are no joins, the most expansive part according to the plan is to actually perform the three COUNT, the aggregation by PRODUCTION(series_id) does not cost a lot apparently, which surprised as we thought this would be the expansive part. This is why we analyzed this query and not the query e) for example, it was to see the real impact of functions like COUNT and aggregation, a query with no joins is perfect for this.
+
+
+QUESTION 6 :
+
+In this part we did not make any change to our schema. We will not explain our design choices again, as we did it in the first assignment. But, one of our biggest mistake was to think that indexes were not that big and quite easy to construct. It turns out that indexes are really big and there is not enough space in the quota space assigned to our database, the problem is that we discovered that too late and so we were not able to try our queries with indexes. However, analyzing the queries in the question 3) tells us where indexes could be useful and why we should have think about using them sooner. On big tables like PRODUCTION_cAST where queries are often joining on the person_id column, an index in this column would help a lot. Indexes on columns like PERSON(name) would help too.
+What we think is that one must not think of indexes looking only at the data and the relations but also at the "usage pattern" : what are the field the users will make the most searches on ? What are the fields that often appear in joins ? etc...
+
+
+
+ATTENTION : dans la partie du deliverable 2, recopier la 2ème et 3ème query depuis le fichier asked_queries, petite modification après leur feedback.

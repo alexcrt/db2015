@@ -12,15 +12,15 @@ SELECT country_code, COUNT(*) AS country_count
 
 SELECT MIN(dur.max_year - dur.min_year), MAX(dur.max_year - dur.min_year), AVG(dur.max_year - dur.min_year) 
   FROM (SELECT MIN(Prod.production_year) AS min_year, MAX(Prod.production_year) AS max_year 
-          FROM PERSON P, PRODUCTION Prod, PRODUCTION_CAST Pc 
-          WHERE P.id = Pc.person_id AND Pc.production_id = Prod.id 
-          GROUP BY P.id) dur;
+          FROM PRODUCTION Prod, PRODUCTION_CAST Pc 
+          WHERE Pc.production_id = Prod.id 
+          GROUP BY Pc.person_id) dur;
    
 SELECT MIN(R.actor_count), MAX(R.actor_count), AVG(R.actor_count) 
   FROM(SELECT COUNT(*) AS actor_count
-          FROM PRODUCTION_CAST Pc, PRODUCTION Prod
-          WHERE Pc.production_id = Prod.id AND (Pc.role LIKE '%actor%' OR PC.role LIKE '%actress%')
-          GROUP BY Prod.id) R;
+          FROM PRODUCTION_CAST Pc
+          WHERE Pc.role LIKE '%actor%' OR PC.role LIKE '%actress%'
+          GROUP BY Pc.production_id) R;
           
 
 
