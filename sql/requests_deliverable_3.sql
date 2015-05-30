@@ -101,3 +101,17 @@ FROM (SELECT res.sid, rank() OVER (ORDER BY res.n_episodes_per_seasons DESC) AS 
       ) res
 ) res2
 ORDER BY res2.ranking OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY
+
+--Query m)
+WITH altName AS
+( SELECT DISTINCT An.person_id AS peId,
+    COUNT(*) OVER (PARTITION BY An.person_id) AS cntName
+    FROM ALTERNATIVE_NAME An),
+altTitle AS
+( SELECT DISTINCT Ati.production_id AS prodId,
+    COUNT(*) OVER (PARTITION BY Ati.production_id) AS cntTitle
+    FROM ALTERNATIVE_TITLE Ati)
+SELECT DISTINCT Pc.production_id, Pc.person_id, (1+altName.cntName)*(1+altTitle.cntTitle) AS degAmbiguity, altName.cntName, altTitle.cntTitle
+FROM altName, altTitle, PRODUCTION_CAST Pc
+WHERE Pc.production_id = altTitle.prodId AND Pc.person_id = altName.peId
+ORDER BY degAmbiguity DESC OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY
