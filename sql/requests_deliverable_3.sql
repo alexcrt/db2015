@@ -119,7 +119,7 @@ FROM (SELECT CompanyMoviesPerYear.*, RANK() OVER (PARTITION BY prodYear ORDER BY
       FROM (SELECT prodYear, compId, COUNT(*) AS compCount
             FROM (SELECT DISTINCT Prod.id AS prodId, Prod.production_year AS prodYear, Pcomp.company_id AS compId
                   FROM PRODUCTION Prod, PRODUCTION_COMPANY Pcomp
-                  WHERE Prod.production_year IS NOT NULL AND Pcomp.production_id = Prod.id AND Prod.kind LIKE 'movie') res1
+                  WHERE Prod.production_year IS NOT NULL AND Pcomp.production_id = Prod.id AND Prod.kind LIKE '%movie%') res1
             GROUP BY compId, prodYear) CompanyMoviesPerYear
       )
 WHERE rn = 1 OR rn =  2 OR rn = 3
