@@ -106,6 +106,12 @@ FROM (SELECT res.sid, rank() OVER (ORDER BY res.n_episodes_per_seasons DESC) AS 
 ) res2
 ORDER BY res2.ranking OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY
 
+--Query j)
+SELECT DISTINCT pe.id AS personId, pe.name AS personName
+FROM PRODUCTION prod, PRODUCTION_CAST prodCast, PERSON pe
+WHERE prod.id = prodCast.production_id AND pe.id = prodCast.person_id AND prod.kind LIKE '%movie%' AND prod.production_year > extract(year from pe.deathdate) AND (prodCast.role LIKE '%actor%' OR prodCast.role LIKE '%actress%' OR prodCast.role LIKE '%director%') 
+      
+
 --Query k)
 -- not tv movies or video movies?
 SELECT *
