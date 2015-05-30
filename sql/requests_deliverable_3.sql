@@ -103,6 +103,7 @@ FROM (SELECT res.sid, rank() OVER (ORDER BY res.n_episodes_per_seasons DESC) AS 
 ORDER BY res2.ranking OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY
 
 --Query m)
+--Returns production_id and person_id, application should get the names from the id by another request.
 WITH altName AS
 ( SELECT DISTINCT An.person_id AS peId,
     COUNT(*) OVER (PARTITION BY An.person_id) AS cntName
