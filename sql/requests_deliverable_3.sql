@@ -139,4 +139,15 @@ FROM altName, altTitle, PRODUCTION_CAST Pc
 WHERE Pc.production_id = altTitle.prodId AND Pc.person_id = altName.peId
 ORDER BY degAmbiguity DESC OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY
 
-
+--Query n)
+SELECT *
+FROM (SELECT NameAppearancePerCountry.*, 
+             ROW_NUMBER() OVER (PARTITION BY countryCode ORDER BY nameCount DESC) as rn
+      FROM (SELECT countryCode, charName, count(*) AS nameCount
+            FROM (SELECT DISTINCT prod.id AS prodId, comp.id AS compId, comp.country_code AS countryCode, chars.name AS charName
+                  FROM CHARACTER_TABLE chars, PRODUCTION_CAST prodCast, PRODUCTION prod, PRODUCTION_COMPANY prodComp, COMPANY comp
+                  WHERE chars.id = prodCast.character_id AND prod.id = prodCast.production_id AND prod.id = prodComp.production_id AND
+                        prodComp.company_id = comp.id AND prodComp.company_type NOT LIKE '%distributor%')
+            GROUP BY countryCode, charName) NameAppearancePerCountry
+      ) res
+WHERE rn = 1
