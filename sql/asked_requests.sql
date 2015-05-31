@@ -1,4 +1,4 @@
-SELECT P.production_year, COUNT(*)
+SELECT P.production_year, COUNT(*) as number_of_movie
   FROM PRODUCTION P 
   WHERE P.kind LIKE '%movie%' 
   GROUP BY P.production_year 
