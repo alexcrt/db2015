@@ -64,7 +64,6 @@ public enum PreComputedQueries {
 
                 queriesD3.get(false).replaceAll(s -> Stream.of(s.split("\n")).filter(u -> !u.startsWith("--")).collect(joining("\n")));
                 queriesD3.get(true).replaceAll(s -> Stream.of(s.split("\n")).filter(u -> !u.startsWith("--")).collect(joining("\n")));
-
             } catch (IOException e) {
                 e.printStackTrace();
             }

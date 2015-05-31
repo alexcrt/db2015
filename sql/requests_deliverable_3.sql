@@ -159,7 +159,7 @@ OR rn = 3;
 SELECT id, name, trivia, minibiography, extract(year from birthdate)
 FROM PERSON
 WHERE deathdate IS NULL AND birthdate IS NOT NULL AND(trivia LIKE '%opera singer%' OR minibiography LIKE '%opera singer%')
-ORDER BY birthdate DESC
+ORDER BY birthdate DESC;
 
 --Query m)
 --Returns production_id and person_id, application should get the names from the id by another request.
