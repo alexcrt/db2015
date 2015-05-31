@@ -1,3 +1,25 @@
+-- Query a).
+WITH temp_table AS (SELECT prod.ID, max(pers.birthdate) AS max_date
+                    FROM PRODUCTION prod, 
+                         PRODUCTION_CAST prod_cast,
+                         PERSON pers
+                    WHERE prod_cast.PRODUCTION_ID = prod.ID 
+                      AND pers.ID = prod_cast.PERSON_ID
+                      AND pers.BIRTHDATE IS NOT NULL
+                    GROUP BY prod.ID
+                    ORDER BY prod.ID)
+
+SELECT p.id, p.name, prod.id, prod.title
+FROM PERSON p, 
+     PRODUCTION_CAST pcast,
+     PRODUCTION prod,
+     temp_table tmp
+WHERE pcast.PERSON_ID = p.ID
+  AND pcast.PRODUCTION_ID = prod.ID 
+  AND p.BIRTHDATE IS NOT NULL 
+  AND tmp.ID = prod.ID
+  AND (tmp.max_date - p.birthdate) > (55 * 365)
+ORDER BY p.id;
 
 -- Query b). Quite complex but if multiple years are the most productives, it returns them all.
 -- WARNING : The clause of P.name LIKE should be dynamic in app, so user can choose Person name.
@@ -102,6 +124,24 @@ FROM (SELECT res.sid, rank() OVER (ORDER BY res.n_episodes_per_seasons DESC) AS 
 ) res2
 ORDER BY res2.ranking OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY
 
+--Query j)
+SELECT DISTINCT pe.id AS personId, pe.name AS personName
+FROM PRODUCTION prod, PRODUCTION_CAST prodCast, PERSON pe
+WHERE prod.id = prodCast.production_id AND pe.id = prodCast.person_id AND prod.kind LIKE '%movie%' AND prod.production_year > extract(year from pe.deathdate) AND (prodCast.role LIKE '%actor%' OR prodCast.role LIKE '%actress%' OR prodCast.role LIKE '%director%') 
+      
+
+--Query k)
+-- not tv movies or video movies?
+SELECT *
+FROM (SELECT CompanyMoviesPerYear.*, RANK() OVER (PARTITION BY prodYear ORDER BY compCount DESC) as rn
+      FROM (SELECT prodYear, compId, COUNT(*) AS compCount
+            FROM (SELECT DISTINCT Prod.id AS prodId, Prod.production_year AS prodYear, Pcomp.company_id AS compId
+                  FROM PRODUCTION Prod, PRODUCTION_COMPANY Pcomp
+                  WHERE Prod.production_year IS NOT NULL AND Pcomp.production_id = Prod.id AND Prod.kind LIKE '%movie%') res1
+            GROUP BY compId, prodYear) CompanyMoviesPerYear
+      )
+WHERE rn = 1 OR rn =  2 OR rn = 3
+
 --Query m)
 --Returns production_id and person_id, application should get the names from the id by another request.
 WITH altName AS
@@ -116,3 +156,16 @@ SELECT DISTINCT Pc.production_id, Pc.person_id, (1+altName.cntName)*(1+altTitle.
 FROM altName, altTitle, PRODUCTION_CAST Pc
 WHERE Pc.production_id = altTitle.prodId AND Pc.person_id = altName.peId
 ORDER BY degAmbiguity DESC OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY
+
+--Query n)
+SELECT *
+FROM (SELECT NameAppearancePerCountry.*, 
+             ROW_NUMBER() OVER (PARTITION BY countryCode ORDER BY nameCount DESC) as rn
+      FROM (SELECT countryCode, charName, count(*) AS nameCount
+            FROM (SELECT DISTINCT prod.id AS prodId, comp.id AS compId, comp.country_code AS countryCode, chars.name AS charName
+                  FROM CHARACTER_TABLE chars, PRODUCTION_CAST prodCast, PRODUCTION prod, PRODUCTION_COMPANY prodComp, COMPANY comp
+                  WHERE chars.id = prodCast.character_id AND prod.id = prodCast.production_id AND prod.id = prodComp.production_id AND
+                        prodComp.company_id = comp.id AND prodComp.company_type NOT LIKE '%distributor%')
+            GROUP BY countryCode, charName) NameAppearancePerCountry
+      ) res
+WHERE rn = 1
