@@ -29,7 +29,7 @@ SELECT DISTINCT res2.y FROM (
   FROM (SELECT Prod.production_year AS y, 
         COUNT(*) OVER (PARTITION BY Prod.production_year) AS year_count
         FROM PRODUCTION_CAST Pc, PRODUCTION Prod, PERSON P
-        WHERE P.name LIKE 'Aadli, Argo' AND Pc.person_id = P.id AND Pc.production_id = Prod.id) res1
+        WHERE P.name LIKE ? AND Pc.person_id = P.id AND Pc.production_id = Prod.id) res1
 ) res2
 WHERE res2.ranking = 1;
 
@@ -41,7 +41,7 @@ SELECT *
 FROM (SELECT res1.cname, res1.pgenre, RANK() OVER (PARTITION BY res1.pgenre ORDER BY res1.cnt DESC) AS cnt2
       FROM (SELECT DISTINCT C.name AS cname, Prod.genre AS pgenre, COUNT(*) OVER (PARTITION BY C.name, Prod.genre) AS cnt
             FROM PRODUCTION Prod, COMPANY C, PRODUCTION_COMPANY Pc
-            WHERE Prod.production_year = 1992 AND Prod.genre IS NOT NULL AND Pc.production_id = Prod.id AND Pc.company_id = C.id) res1) res2
+            WHERE Prod.production_year = ? AND Prod.genre IS NOT NULL AND Pc.production_id = Prod.id AND Pc.company_id = C.id) res1) res2
 WHERE res2.cnt2 = 1;
 
 
@@ -51,7 +51,7 @@ WHERE res2.cnt2 = 1;
 WITH res1  AS (
   SELECT P.name AS pname, Pc.production_id AS prod_id
   FROM PERSON P, PRODUCTION_CAST Pc
-  WHERE P.name LIKE 'Freeman%' AND Pc.person_id = P.id)
+  WHERE P.name LIKE ? AND Pc.person_id = P.id)
 SELECT DISTINCT a.pname
 FROM res1 a INNER JOIN res1 b 
 ON a.prod_id = b.prod_id AND a.pname NOT LIKE b.pname;
@@ -81,7 +81,7 @@ WITH cnt AS
   COUNT(DISTINCT Prod.season_number) OVER (PARTITION BY Prod.series_id) AS season_cnt, 
   COUNT(*) OVER (PARTITION BY Prod.series_id) AS episode_cnt
   FROM PRODUCTION Prod
-  WHERE Prod.kind LIKE 'episode')
+  WHERE Prod.kind LIKE ?)
 SELECT (sum(cnt.episode_cnt) / sum(cnt.season_cnt))
 FROM cnt;
 
@@ -97,7 +97,7 @@ WITH cnt AS
 (SELECT DISTINCT Prod.series_id AS sid,
   MAX(Prod.season_number) OVER (PARTITION BY Prod.series_id) AS season_cnt
   FROM PRODUCTION Prod
-  WHERE Prod.kind LIKE 'episode')
+  WHERE Prod.kind LIKE ?)
 SELECT AVG(cnt.season_cnt)
 FROM cnt;
 
@@ -110,7 +110,7 @@ FROM (WITH cnt AS
         (SELECT DISTINCT Prod.series_id AS sid, 
           COUNT(DISTINCT Prod.season_number) OVER (PARTITION BY Prod.series_id) AS season_cnt
           FROM PRODUCTION Prod
-          WHERE Prod.kind LIKE 'episode')
+          WHERE Prod.kind LIKE ?)
       SELECT cnt.sid AS sid, rank() OVER (ORDER BY cnt.season_cnt DESC) AS ranking
       FROM cnt) res
 ORDER BY res.ranking OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY;
@@ -126,7 +126,7 @@ FROM (SELECT res.sid, rank() OVER (ORDER BY res.n_episodes_per_seasons DESC) AS 
                   COUNT(DISTINCT Prod.season_number) OVER (PARTITION BY Prod.series_id) AS season_cnt, 
                   COUNT(*) OVER (PARTITION BY Prod.series_id) AS episode_cnt
                   FROM PRODUCTION Prod
-                  WHERE Prod.kind LIKE 'episode') cnt
+                  WHERE Prod.kind LIKE ?) cnt
       ) res
 ) res2
 ORDER BY res2.ranking OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY;
