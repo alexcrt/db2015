@@ -1,5 +1,4 @@
 
-
 -- Query b). Quite complex but if multiple years are the most productives, it returns them all.
 -- WARNING : The clause of P.name LIKE should be dynamic in app, so user can choose Person name.
 SELECT DISTINCT res2.y FROM (
@@ -7,10 +6,9 @@ SELECT DISTINCT res2.y FROM (
   FROM (SELECT Prod.production_year AS y, 
         COUNT(*) OVER (PARTITION BY Prod.production_year) AS year_count
         FROM PRODUCTION_CAST Pc, PRODUCTION Prod, PERSON P
-        WHERE P.name LIKE '%Irisipau' AND Pc.person_id = P.id AND Pc.production_id = Prod.id) res1
+        WHERE P.name LIKE 'Aadli, Argo' AND Pc.person_id = P.id AND Pc.production_id = Prod.id) res1
 ) res2
 WHERE res2.ranking = 1
-
 
 --Query c) Again here, if two companies have the same number of production in a year and a genre and they are the most productive this genre for this year
 --both companies are returned for that genre.
@@ -33,7 +31,6 @@ SELECT DISTINCT a.pname
 FROM res1 a INNER JOIN res1 b 
 ON a.prod_id = b.prod_id AND a.pname NOT LIKE b.pname
 
-
 --Query e).
 WITH n_prod_by_year AS
 (SELECT DISTINCT Prod.production_year AS pyear, COUNT(*) OVER (PARTITION BY Prod.production_year) AS prod_cnt
@@ -50,7 +47,6 @@ SELECT n_actor_by_year.pyear, (n_actor_by_year.actor_cnt / n_prod_by_year.prod_c
 FROM n_actor_by_year, n_prod_by_year
 WHERE n_actor_by_year.pyear = n_prod_by_year.pyear
 ORDER BY n_actor_by_year.pyear
-
 
 --Query f).
 --Returns series_id, application should get the names from the id by another request.

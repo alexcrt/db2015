@@ -1,9 +1,31 @@
+ATTENTION : dans la partie du deliverable 2, recopier la 2ème et 3ème query depuis le fichier asked_queries, petite modification après leur feedback.
+
+
+
+
+QUESTION 2 :
+
+We choose to study the indexes on queries b), c) and e). Those three queries are a good choice because they both make use of multiple joins, often on PRODUCTION_CAST which is the biggest table in the database. The query e) was also choosen because it is one of the slowest queries to complete. So, looking at those queries and the way we implemented them, we created those indexes :
+
+CREATE INDEX idx_prodcast_personid ON PRODUCTION_CAST(person_id)
+CREATE INDEX idx_prodcast_prodid ON PRODUCTION_CAST(production_id)
+CREATE INDEX idx_person_name ON PERSON(name)
+CREATE INDEX idx_production_prodyear ON PRODUCTION(production_year ASC)
+
+The first two are useful, in our opinion, because the PRODUCTION_CAST table is huge and it is used a lot in joins (as it links PERSON with PRODUCTION and CHARACTER relations). The third index can be useful, indeed a classic use case of this kind of application is to search an actor by its name. The last index is here because another frequent use case is to sort results by year of production.
+
+Indexes are useful on big tables on which WHERE, GROUP BY, ORDER BY or joins are performed. If the table is too small, the index is not efficient as it adds some overhead, in that case a full table scan is more efficient. Observing the query plans of multiple queries, we discovered that by default a full table scan is considered the most efficient way to read a table. Also, as soon as a big relation is involved a hash join is used by the DBMS. As we will see in the next part, using an index can change plans and costs a lot.
+
+However, even if an index can be a very efficient way to optimize queries, the disadvantages it brings can become greater than the advantages : for example, on a column that is often modified (insertion, update or deletion), the index can slow the modifications a lot. However, in our case, all the data are already in the database, so we do not have to care about this problem.
+
 QUESTION 3 :
 
-b) 11443 ms
-c) ~ 6000 ms for the first execution, then ~ 1100 ms when data is chached
-d) 9685 ms
-e) ~ 235000 - 240000 ms
+Here are the running times of the queries (with use of indexes) :
+
+b) 42 ms
+c) approximatly 6000 ms for the first execution, then approximatly 1000 ms when data is chached in the system
+d) 366 ms
+e) approximatly 235000 ms
 f) 5031 ms
 g) 4967 ms
 h) 5189 ms
@@ -11,24 +33,22 @@ i) 5311 ms
 
 Plan analysis for three queries :
 
-Query b) :
+Looking at the plans before making the index showed us that by default the DBMS uses hash joins and full table scans to perform the queries. Now we will see what is changed for the three queries b), c) and e). What we observed looking at the query plan is that the system does not consider the fact of creating temporary views to be expansive, it is indeed not, if the temporary views fit in memory, but we do not know if the system knows this in advance (because if it does not fit in memory, it has to be written on disk, which is a lot more expansive).
 
-The most expansive part of this plan is on the theta-join of PERSON with PRODUCTION_CAST on the person_id column. The PRODUCTION_CAST is the biggest table of the database, reading it fully to perform the job is already expansive. Indeed a full table scan is used here, with an index on the person_id column, an index scan could be used, which would optimize this part. An index on the PERSON(name) column is a good idea too in our opinion, as searching informations with just the name, or part or the name, of someone is a really common pattern. A hash join is used, if we look at the documentation of the EXPLAIN PLAN command, we learn that this join method is used by default when there is a join on a lot of rows. The most of the cost comes from this first join.
-The join with PRODUCTION is not as expansive, because the previous one returns a number of rows really smaller than the size of the PRODUCTION_CAST table and the PRODUCTION table itself is really not big in comparison. The generation of intermediate temporary views, the generation of the rank and the use of DISTINCT does not adds a lot of overhead according to the plan : the cost goes from 205k after the last join to 222k at the end of the plan, so this part of temporary view generation and ranking is not really expansive compared to the joins.
+Query b) :
+With indexes, tables are accessed through an index range scan, even for the column person_id of the PRODUCTION_CAST table which is joined with column PERSON(id). The application of the WHERE clause on the PERSON table is a lot less expansive with indexes. The joins are still the most expansive part of the query, but again, they are a lot less expansive than without the indexes. The interesting point to observe here is that a nested loop join is used and not an index join, we think that once the index as been used to retrieve desired rows, the number of rows is too small to use indexes that would add useless overhead.
+
 
 Query c) :
-
-For this query, approximatly half of the the cost comes from reading tables and applying where clauses (again, indexes could be useful here). As in the previous query, another big part of the cost comes from the join with the PRODUCTION_CAST table, an index on this table would definitly help. For the rest of the query, hashing unique elements (DISTINCT clause), computing the RANK and making temporary views is not really expansive compared to the joins.
-
-Query f) :
-Here there are no joins, the most expansive part according to the plan is to actually perform the three COUNT, the aggregation by PRODUCTION(series_id) does not cost a lot apparently, which surprised as we thought this would be the expansive part. This is why we analyzed this query and not the query e) for example, it was to see the real impact of functions like COUNT and aggregation, a query with no joins is perfect for this.
+In this query, the only time the index is used is to access the PRODUCTION table to apply the WHERE clause. The two other tables involved in the join have no index, so a full table scan is performed. Then, as usual, a hash join is used. So here the index helps filtering the PRODUCTION table in a really efficient way. The most expansive parts are the joins again.
 
 
-QUESTION 6 :
-
-In this part we did not make any change to our schema. We will not explain our design choices again, as we did it in the first assignment. But, one of our biggest mistake was to think that indexes were not that big and quite easy to construct. It turns out that indexes are really big and there is not enough space in the quota space assigned to our database, the problem is that we discovered that too late and so we were not able to try our queries with indexes. However, analyzing the queries in the question 3) tells us where indexes could be useful and why we should have think about using them sooner. On big tables like PRODUCTION_cAST where queries are often joining on the person_id column, an index in this column would help a lot. Indexes on columns like PERSON(name) would help too.
-What we think is that one must not think of indexes looking only at the data and the relations but also at the "usage pattern" : what are the field the users will make the most searches on ? What are the fields that often appear in joins ? etc...
+Query e) :
+In this query, the second subquery (the one having a join on PRODUCTION_CAST) is the most expansive, this is logical as the PRODUCTION_CAST realtion is the biggest one we have. There are some interesting thing to observe here : the first subquery does a full index scan on the PRODUCTION table, this is more efficient than a full table scan if we believe the DBMS. But the most interesting fact to observe is that to execute the outer most query and apply the ORDER BY, the DBMS uses a sort merge join. The most expansive part of the all query is, as said before, the join with PRODUCTION_CAST. The rest of the query is not as expansive and the sort merge join is really efficient.
 
 
+CONCLUSION :
 
-ATTENTION : dans la partie du deliverable 2, recopier la 2ème et 3ème query depuis le fichier asked_queries, petite modification après leur feedback.
+In this part we did not make any change to our schema. We will not explain our design choices again, as we did it in the previous parts of this report. But, one of our biggest mistake was to think that indexes were not that big and quite easy to construct. It turns out that indexes are really big and take some space in the database. However, we were able to create them. Looking at the queries we chose, we concluded that indexes are to be taken seriously as they can make performance better or worse. As we said before, we think that indexes have only advantages in our case as the database stays in its current state. But on a relation on which a lot of updates are done, an index could hurt performance badly. Moreover, in our opinion, one should not choose the indexes to create by only looking at the schema but also by looking at the use cases : columns participating in most of the joins or columns being used a lot in WHERE clauses for example.
+We tried to create an index on PRODUCTION(kind) column, but strangely, it does not change the running time of queries f, g, h, i. Looking at the plans used, the index is not used, this must means that in that a full table scan is more efficient than an index scan as this relation is not too big.
+
