@@ -68,6 +68,9 @@ public class MainController implements Initializable {
     @FXML
     private TextArea queryNameArea;
     @FXML
+    private TextField inputTextField;
+    
+    @FXML
     private Button executeQueryButton;
 
     private final ObservableList<Model> queryResultsViewList = FXCollections.observableArrayList();

@@ -20,11 +20,11 @@
                                 </AnchorPane>
                                 <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
                                     <children>
-                                        <ComboBox fx:id="tablesNameComboBox" layoutX="4.0" layoutY="41.0" prefWidth="150.0" />
+                                        <ComboBox fx:id="tablesNameComboBox" layoutX="4.0" layoutY="41.0" prefWidth="150.0" AnchorPane.leftAnchor="12.0" AnchorPane.rightAnchor="12.0" />
                                         <Label layoutX="14.0" layoutY="14.0" prefHeight="16.0" prefWidth="121.0" text="Table:" />
                                         <Label layoutX="14.0" layoutY="85.0" text="Keyword:" />
-                                        <TextField fx:id="keywordField" layoutX="11.0" layoutY="114.0" prefHeight="26.0" prefWidth="135.0" />
-                                        <Button fx:id="searchAnyTextButton" layoutX="14.0" layoutY="164.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="135.0" text="Search" />
+                                        <TextField fx:id="keywordField" layoutX="11.0" layoutY="114.0" prefHeight="26.0" prefWidth="135.0" AnchorPane.leftAnchor="12.0" AnchorPane.rightAnchor="12.0" />
+                                        <Button fx:id="searchAnyTextButton" layoutX="14.0" layoutY="164.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="135.0" text="Search" AnchorPane.leftAnchor="12.0" AnchorPane.rightAnchor="12.0" />
                                     </children>
                                 </AnchorPane>
                             </items>
@@ -35,17 +35,18 @@
                     <content>
                         <SplitPane dividerPositions="0.6916666666666667" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0">
                             <items>
-                                <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" prefHeight="398.0" prefWidth="433.0">
+                                <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="398.0" prefWidth="433.0">
                                     <children>
                                         <TableView fx:id="queryResultsTableView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="398.0" prefWidth="425.0" style="-fx-focus-color: transparent; -fx-faint-focus-color: transparent;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                                     </children>
                                 </AnchorPane>
-                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+                                <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="160.0" prefWidth="100.0">
                                     <children>
                                         <ComboBox fx:id="queryComboBox" layoutX="4.0" layoutY="41.0" maxHeight="-Infinity" maxWidth="-Infinity" prefWidth="150.0" />
                                         <Label layoutX="14.0" layoutY="14.0" prefHeight="16.0" prefWidth="121.0" text="Query:" />
-                                        <TextArea fx:id="queryNameArea" editable="false" layoutX="10.0" layoutY="73.0" prefHeight="233.0" prefWidth="162.0" />
-                                        <Button fx:id="executeQueryButton" layoutX="23.0" layoutY="320.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="135.0" text="Execute" />
+                                        <TextArea fx:id="queryNameArea" editable="false" layoutX="10.0" layoutY="73.0" prefHeight="214.0" prefWidth="157.0" AnchorPane.leftAnchor="12.0" AnchorPane.rightAnchor="12.0" />
+                                        <Button fx:id="executeQueryButton" layoutX="11.0" layoutY="351.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="135.0" text="Execute" AnchorPane.leftAnchor="11.0" AnchorPane.rightAnchor="13.0" />
+                              <TextField fx:id="inputTextField" layoutX="4.0" layoutY="301.0" AnchorPane.leftAnchor="12.0" AnchorPane.rightAnchor="12.0" />
                                     </children>
                                 </AnchorPane>
                             </items>
