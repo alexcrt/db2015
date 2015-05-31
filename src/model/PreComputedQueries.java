@@ -55,15 +55,17 @@ public enum PreComputedQueries {
             try {
                 queriesD2 = Stream.of(Files.lines(Paths.get("sql/asked_requests.sql")).collect(joining("\n")).split(";"))
                         .flatMap(Stream::of)
+                        .map(String::trim)
                         .collect(toList());
 
                 queriesD3 =
                         Stream.of(Files.lines(Paths.get("sql/requests_deliverable_3.sql")).collect(joining("\n")).split(";"))
                                 .flatMap(Stream::of)
+                                .map(String::trim)
                                 .collect(partitioningBy(s -> s.contains("--Dynamic")));
 
-                queriesD3.get(false).replaceAll(s -> Stream.of(s.split("\n")).filter(u -> !u.startsWith("--")).collect(joining("\n")));
-                queriesD3.get(true).replaceAll(s -> Stream.of(s.split("\n")).filter(u -> !u.startsWith("--")).collect(joining("\n")));
+                queriesD3.get(false).replaceAll(s -> Stream.of(s.split("\n")).filter(u -> !u.startsWith("--") || u.isEmpty()).collect(joining("\n")));
+                queriesD3.get(true).replaceAll(s -> Stream.of(s.split("\n")).filter(u -> !u.startsWith("--") || u.isEmpty()).collect(joining("\n")));
             } catch (IOException e) {
                 e.printStackTrace();
             }
