@@ -22,6 +22,7 @@ QUESTION 3 :
 
 Here are the running times of the queries (with use of indexes) :
 
+a) 222294 ms
 b) 42 ms
 c) approximatly 6000 ms for the first execution, then approximatly 1000 ms when data is chached in the system
 d) 366 ms
@@ -30,6 +31,11 @@ f) 5031 ms
 g) 4967 ms
 h) 5189 ms
 i) 5311 ms 
+j) 46496 ms
+k) 5208 ms
+l) 3802 ms
+m) 24688 ms
+n) 85487 ms
 
 Plan analysis for three queries :
 
