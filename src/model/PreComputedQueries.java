@@ -34,17 +34,19 @@ public enum PreComputedQueries {
                     "were 55 or more year older than the youngest actor/actress playing", Holder.queriesD3.get(false).get(0)),
     QUERY_B("Most productive year of actor: ", Holder.queriesD3.get(true).get(0), true),
     QUERY_C("Company with the highest number of productions in each genre for year: ", Holder.queriesD3.get(true).get(1), true),
-    QUERY_D("Person who worked with spouses/children/potential relatives on the same production: ", Holder.queriesD3.get(true).get(2)),
+    QUERY_D("Person who worked with spouses/children/potential relatives on the same production: ", Holder.queriesD3.get(true).get(2), true),
     QUERY_E("Average number of actors per production per year", Holder.queriesD3.get(false).get(1)),
-    QUERY_F("Average number of episodes per season", Holder.queriesD3.get(false).get(2)),
-    QUERY_G("", Holder.queriesD3.get().get()),
-    QUERY_H("", Holder.queriesD3.get().get()),
-    QUERY_I("", Holder.queriesD3.get().get()),
-    QUERY_J("", Holder.queriesD3.get().get()),
-    QUERY_K("", Holder.queriesD3.get().get()),
-    QUERY_L("", Holder.queriesD3.get().get()),
-    QUERY_M("", Holder.queriesD3.get().get()),
-    QUERY_N("", Holder.queriesD3.get().get());
+    QUERY_F("Average number of episodes per season", Holder.queriesD3.get(true).get(3), true),
+    QUERY_G("Average number of seasons per series.", Holder.queriesD3.get(true).get(4), true),
+    QUERY_H("Top ten tv-series (by number of seasons).", Holder.queriesD3.get(true).get(5), true),
+    QUERY_I("Top ten tv-series (by number of episodes per season)", Holder.queriesD3.get(true).get(6), true),
+    QUERY_J("Actors, actresses and directors who have movies (including tv movies and video movies) released\n" +
+            "after their death", Holder.queriesD3.get(false).get(2)),
+    QUERY_K("Companies that released the most movies for each year", Holder.queriesD3.get(false).get(3)),
+    QUERY_L("Living people who are opera singers ordered from youngest to oldest", Holder.queriesD3.get(false).get(4)),
+    QUERY_M("10 most ambiguous credits (pairs of people and productions) ordered by the degree of ambiguity.", Holder.queriesD3.get(true).get(7), true),
+    QUERY_N("Most frequent character name that appears in the productions of a\n" +
+            "production company (not a distributor) per country", Holder.queriesD3.get(false).get(5));
 
     private static class Holder {
         private static List<String> queriesD2;
