@@ -1,4 +1,25 @@
+-- Query a).
+WITH temp_table AS (SELECT prod.ID, max(pers.birthdate) AS max_date
+                    FROM PRODUCTION prod, 
+                         PRODUCTION_CAST prod_cast,
+                         PERSON pers
+                    WHERE prod_cast.PRODUCTION_ID = prod.ID 
+                      AND pers.ID = prod_cast.PERSON_ID
+                      AND pers.BIRTHDATE IS NOT NULL
+                    GROUP BY prod.ID
+                    ORDER BY prod.ID)
 
+SELECT p.id, p.name, prod.id, prod.title
+FROM PERSON p, 
+     PRODUCTION_CAST pcast,
+     PRODUCTION prod,
+     temp_table tmp
+WHERE pcast.PERSON_ID = p.ID
+  AND pcast.PRODUCTION_ID = prod.ID 
+  AND p.BIRTHDATE IS NOT NULL 
+  AND tmp.ID = prod.ID
+  AND (tmp.max_date - p.birthdate) > (55 * 365)
+ORDER BY p.id;
 
 -- Query b). Quite complex but if multiple years are the most productives, it returns them all.
 -- WARNING : The clause of P.name LIKE should be dynamic in app, so user can choose Person name.
