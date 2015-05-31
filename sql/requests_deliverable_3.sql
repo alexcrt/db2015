@@ -47,11 +47,10 @@ WHERE res2.cnt2 = 1;
 
 --Query d). A variant of what was asked where the user enters a name (or part of it)
 --and the system gets everyone who has this name and worked with relatives in the same production.
---Dynamic
 WITH res1  AS (
   SELECT P.name AS pname, Pc.production_id AS prod_id
   FROM PERSON P, PRODUCTION_CAST Pc
-  WHERE P.name LIKE ? AND Pc.person_id = P.id)
+  WHERE P.name LIKE 'Freeman%' AND Pc.person_id = P.id)
 SELECT DISTINCT a.pname
 FROM res1 a INNER JOIN res1 b 
 ON a.prod_id = b.prod_id AND a.pname NOT LIKE b.pname;
@@ -75,13 +74,12 @@ ORDER BY n_actor_by_year.pyear;
 
 --Query f).
 --Returns series_id, application should get the names from the id by another request.
---Dynamic
 WITH cnt AS
 (SELECT DISTINCT Prod.series_id AS sid, 
   COUNT(DISTINCT Prod.season_number) OVER (PARTITION BY Prod.series_id) AS season_cnt, 
   COUNT(*) OVER (PARTITION BY Prod.series_id) AS episode_cnt
   FROM PRODUCTION Prod
-  WHERE Prod.kind LIKE ?)
+  WHERE Prod.kind LIKE 'episode')
 SELECT (sum(cnt.episode_cnt) / sum(cnt.season_cnt))
 FROM cnt;
 
@@ -92,25 +90,23 @@ FROM cnt;
 --to be a season 7 and a season 8, so we just take the highest season number for each show
 
 --Returns series_id, application should get the names from the id by another request.
---Dynamic
 WITH cnt AS
 (SELECT DISTINCT Prod.series_id AS sid,
   MAX(Prod.season_number) OVER (PARTITION BY Prod.series_id) AS season_cnt
   FROM PRODUCTION Prod
-  WHERE Prod.kind LIKE ?)
+  WHERE Prod.kind LIKE 'episode')
 SELECT AVG(cnt.season_cnt)
 FROM cnt;
 
 
 --Query h)
 --Returns series_id, application should get the names from the id by another request.
---Dynamic
 SELECT res.sid
 FROM (WITH cnt AS
         (SELECT DISTINCT Prod.series_id AS sid, 
           COUNT(DISTINCT Prod.season_number) OVER (PARTITION BY Prod.series_id) AS season_cnt
           FROM PRODUCTION Prod
-          WHERE Prod.kind LIKE ?)
+          WHERE Prod.kind LIKE 'episode')
       SELECT cnt.sid AS sid, rank() OVER (ORDER BY cnt.season_cnt DESC) AS ranking
       FROM cnt) res
 ORDER BY res.ranking OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY;
@@ -118,7 +114,6 @@ ORDER BY res.ranking OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY;
 
 --Query i)
 --Same as before concerning the app : Returns series_id, application should get the names from the id by another request.
---Dynamic
 SELECT res2.sid
 FROM (SELECT res.sid, rank() OVER (ORDER BY res.n_episodes_per_seasons DESC) AS ranking
       FROM (SELECT cnt.sid AS sid,(cnt.episode_cnt / cnt.season_cnt) AS n_episodes_per_seasons
@@ -126,7 +121,7 @@ FROM (SELECT res.sid, rank() OVER (ORDER BY res.n_episodes_per_seasons DESC) AS 
                   COUNT(DISTINCT Prod.season_number) OVER (PARTITION BY Prod.series_id) AS season_cnt, 
                   COUNT(*) OVER (PARTITION BY Prod.series_id) AS episode_cnt
                   FROM PRODUCTION Prod
-                  WHERE Prod.kind LIKE ?) cnt
+                  WHERE Prod.kind LIKE 'episode') cnt
       ) res
 ) res2
 ORDER BY res2.ranking OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY;
@@ -163,7 +158,6 @@ ORDER BY birthdate DESC;
 
 --Query m)
 --Returns production_id and person_id, application should get the names from the id by another request.
---Dynamic
 WITH altName AS
 ( SELECT DISTINCT An.person_id AS peId,
     COUNT(*) OVER (PARTITION BY An.person_id) AS cntName
