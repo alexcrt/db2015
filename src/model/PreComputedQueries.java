@@ -3,6 +3,7 @@ package model;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.sql.Types;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -32,8 +33,8 @@ public enum PreComputedQueries {
     //D3 queries
     QUERY_A("Actors and actresses (and report the productions) who played in a production where they\n"+
                     "were 55 or more year older than the youngest actor/actress playing", Holder.queriesD3.get(false).get(0)),
-    QUERY_B("Most productive year of actor: ", Holder.queriesD3.get(true).get(0), true),
-    QUERY_C("Company with the highest number of productions in each genre for year: ", Holder.queriesD3.get(true).get(1), true),
+    QUERY_B("Most productive year of actor (dynamic): ", Holder.queriesD3.get(true).get(0), true, Types.NVARCHAR),
+    QUERY_C("Company with the highest number of productions in each genre for year (dynamic): ", Holder.queriesD3.get(true).get(1), true, Types.INTEGER),
     QUERY_D("Person who worked with spouses/children/potential relatives on the same production: ", Holder.queriesD3.get(false).get(1)),
     QUERY_E("Average number of actors per production per year", Holder.queriesD3.get(false).get(2)),
     QUERY_F("Average number of episodes per season", Holder.queriesD3.get(false).get(3)),
@@ -75,16 +76,26 @@ public enum PreComputedQueries {
     private String description;
     private String query;
     private boolean isDynamic;
+    private Integer sqlType;
 
     PreComputedQueries(String description, String query) {
         this.description = description;
         this.query = query;
         this.isDynamic = false;
+        this.sqlType = null;
     }
 
-    PreComputedQueries(String description, String query, boolean isDynamic) {
+    PreComputedQueries(String description, String query, boolean isDynamic, int sqlType) {
         this(description, query);
         this.isDynamic = isDynamic;
+        this.sqlType = sqlType;
+    }
+
+    public int getSqlType() {
+        if(!isDynamic) {
+            throw new IllegalStateException("Should not query a sql type for a non-dynamic query");
+        }
+        return this.sqlType;
     }
 
     public boolean isDynamic() {

@@ -67,6 +67,7 @@ public class MainController implements Initializable {
     private ComboBox<PreComputedQueries> queryComboBox;
     @FXML
     private TextArea queryNameArea;
+
     @FXML
     private TextField inputTextField;
     
@@ -124,9 +125,13 @@ public class MainController implements Initializable {
             queryComboBox.setItems(FXCollections.observableArrayList(preComputedQueries));
 
             SelectionModel<PreComputedQueries> selectionModel = queryComboBox.getSelectionModel();
-            queryComboBox.setOnAction(v -> queryNameArea.setText(selectionModel.getSelectedItem().getQuery()));
+            queryComboBox.setOnAction(v -> {
+                queryNameArea.setText(selectionModel.getSelectedItem().getQuery());
+                inputTextField.setVisible(selectionModel.getSelectedItem().isDynamic());
+            });
             selectionModel.selectFirst();
             queryNameArea.setText(selectionModel.getSelectedItem().getQuery());
+            inputTextField.setVisible(selectionModel.getSelectedItem().isDynamic());
 
             executeQueryButton.setOnAction(e -> executePreComputedQuery(selectionModel.getSelectedItem()));
 
@@ -144,7 +149,13 @@ public class MainController implements Initializable {
 
                 LOGGER.log(Level.INFO, query.getQuery());
 
-                try (ResultSet rs = con.prepareStatement(query.getQuery()).executeQuery()) {
+                PreparedStatement preparedStatement = con.prepareStatement(query.getQuery());
+
+                if(query.isDynamic()) {
+                    preparedStatement.setObject(1, inputTextField.getText(), query.getSqlType());
+                }
+
+                try (ResultSet rs = preparedStatement.executeQuery()) {
                     ResultSetMetaData metaData = rs.getMetaData();
 
                     List<TableColumn<Model, String>> tableColumns = new ArrayList<>();
