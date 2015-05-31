@@ -4,18 +4,22 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<TabPane xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.MainController">
+<TabPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.MainController">
    <tabs>
       <Tab closable="false" style="-fx-focus-color: transparent; -fx-faint-focus-color: transparent;" text="Tables view">
          <content>
             <SplitPane dividerPositions="0.717391304347826" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0">
               <items>
-                <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" prefHeight="398.0" prefWidth="433.0">
-                     <children>
-                        <TableView fx:id="dataTableView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="354.0" prefWidth="425.0" style="-fx-focus-color: transparent; -fx-faint-focus-color: transparent;" AnchorPane.bottomAnchor="46.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="0.0" />
-                        <Pagination fx:id="paginationTab1" layoutY="347.0" prefHeight="52.0" prefWidth="424.0" />
-                     </children>
-                </AnchorPane>
+                  <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
+                     <center>
+                      <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" prefHeight="398.0" prefWidth="433.0">
+                           <children>
+                              <TableView fx:id="dataTableView" prefHeight="354.0" prefWidth="425.0" style="-fx-focus-color: transparent; -fx-faint-focus-color: transparent;" AnchorPane.bottomAnchor="46.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="0.0" />
+                              <Pagination fx:id="paginationTab1" layoutY="347.0" prefHeight="52.0" prefWidth="424.0" />
+                           </children>
+                      </AnchorPane>
+                     </center>
+                  </BorderPane>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
                      <children>
                         <ComboBox fx:id="tablesNameComboBox" layoutX="4.0" layoutY="41.0" prefWidth="150.0" />
