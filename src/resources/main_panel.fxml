@@ -15,7 +15,7 @@
                                 <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" prefHeight="398.0" prefWidth="433.0">
                                     <children>
                                         <TableView fx:id="dataTableView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="354.0" prefWidth="425.0" style="-fx-focus-color: transparent; -fx-faint-focus-color: transparent;" AnchorPane.bottomAnchor="46.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="0.0" />
-                                        <Pagination fx:id="paginationTab1" layoutY="347.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="52.0" prefWidth="424.0" AnchorPane.bottomAnchor="1.0" />
+                                        <Pagination fx:id="paginationTab1" layoutY="347.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="52.0" prefWidth="424.0" AnchorPane.bottomAnchor="1.0" AnchorPane.leftAnchor="1.0" AnchorPane.rightAnchor="1.0" />
                                     </children>
                                 </AnchorPane>
                                 <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
