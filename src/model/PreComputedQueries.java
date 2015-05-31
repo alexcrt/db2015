@@ -25,26 +25,26 @@ public enum PreComputedQueries {
     MIN_MAX_AVERAGE_HEIGHT_FEMALE_PERSONS("Min, max and average height of female persons", Holder.queriesD2.get(4)),
     PAIRS_PERSONS_MOVIES_BOTH_DIRECTED_AND_ACTED_MOVIE("Pairs of persons and movies where the person has both directed the movie and acted in the movie (does not include tv and video movies",
             Holder.queriesD2.get(5)),
-    THREE_MOST_POPULAR_CHARACTER_NAMES("Three most popular character names", Holder.queriesD2.get(6));
+    THREE_MOST_POPULAR_CHARACTER_NAMES("Three most popular character names", Holder.queriesD2.get(6)),
 
 
-    /*
+
     //D3 queries
     QUERY_A("Actors and actresses (and report the productions) who played in a production where they\n"+
                     "were 55 or more year older than the youngest actor/actress playing", Holder.queriesD3.get(false).get(0)),
-    QUERY_B("Most productive year of actor: ", Holder.queriesD3),
-    QUERY_C(),
-    QUERY_D(),
-    QUERY_E(),
-    QUERY_F(),
-    QUERY_G(),
-    QUERY_H(),
-    QUERY_I(),
-    QUERY_J(),
-    QUERY_K(),
-    QUERY_L(),
-    QUERY_M(),
-    QUERY_N();*/
+    QUERY_B("Most productive year of actor: ", Holder.queriesD3.get(true).get(0), true),
+    QUERY_C("Company with the highest number of productions in each genre for year: ", Holder.queriesD3.get(true).get(1), true),
+    QUERY_D("Person who worked with spouses/children/potential relatives on the same production: ", Holder.queriesD3.get(true).get(2)),
+    QUERY_E("Average number of actors per production per year", Holder.queriesD3.get(false).get(1)),
+    QUERY_F("Average number of episodes per season", Holder.queriesD3.get(false).get(2)),
+    QUERY_G("", Holder.queriesD3.get().get()),
+    QUERY_H("", Holder.queriesD3.get().get()),
+    QUERY_I("", Holder.queriesD3.get().get()),
+    QUERY_J("", Holder.queriesD3.get().get()),
+    QUERY_K("", Holder.queriesD3.get().get()),
+    QUERY_L("", Holder.queriesD3.get().get()),
+    QUERY_M("", Holder.queriesD3.get().get()),
+    QUERY_N("", Holder.queriesD3.get().get());
 
     private static class Holder {
         private static List<String> queriesD2;

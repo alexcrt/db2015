@@ -4,55 +4,55 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<TabPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" xmlns="http://javafx.com/javafx/8.0.40" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.MainController">
-   <tabs>
-      <Tab closable="false" style="-fx-focus-color: transparent; -fx-faint-focus-color: transparent;" text="Tables view">
-         <content>
-            <SplitPane dividerPositions="0.717391304347826" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0">
-              <items>
-                  <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
-                     <center>
-                      <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" prefHeight="398.0" prefWidth="433.0">
-                           <children>
-                              <TableView fx:id="dataTableView" prefHeight="354.0" prefWidth="425.0" style="-fx-focus-color: transparent; -fx-faint-focus-color: transparent;" AnchorPane.bottomAnchor="46.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="0.0" />
-                              <Pagination fx:id="paginationTab1" layoutY="347.0" prefHeight="52.0" prefWidth="424.0" />
-                           </children>
-                      </AnchorPane>
-                     </center>
-                  </BorderPane>
-                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
-                     <children>
-                        <ComboBox fx:id="tablesNameComboBox" layoutX="4.0" layoutY="41.0" prefWidth="150.0" />
-                        <Label layoutX="14.0" layoutY="14.0" prefHeight="16.0" prefWidth="121.0" text="Table:" />
-                        <Label layoutX="14.0" layoutY="85.0" text="Keyword:" />
-                        <TextField fx:id="keywordField" layoutX="11.0" layoutY="114.0" prefHeight="26.0" prefWidth="135.0" />
-                        <Button fx:id="searchAnyTextButton" layoutX="14.0" layoutY="164.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="135.0" text="Search" />
-                     </children>
-                </AnchorPane>
-              </items>
-            </SplitPane>
-         </content>
-      </Tab>
-      <Tab closable="false" style="-fx-focus-color: transparent; -fx-faint-focus-color: transparent;" text="Pre-computed queries">
-         <content>
-            <SplitPane dividerPositions="0.6916666666666667" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0">
-               <items>
-                  <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" prefHeight="398.0" prefWidth="433.0">
-                     <children>
-                        <TableView fx:id="queryResultsTableView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="398.0" prefWidth="425.0" style="-fx-focus-color: transparent; -fx-faint-focus-color: transparent;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-                     </children>
-                  </AnchorPane>
-                  <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
-                     <children>
-                        <ComboBox fx:id="queryComboBox" layoutX="4.0" layoutY="41.0" prefWidth="150.0" />
-                        <Label layoutX="14.0" layoutY="14.0" prefHeight="16.0" prefWidth="121.0" text="Query:" />
-                        <TextArea fx:id="queryNameArea" editable="false" layoutX="10.0" layoutY="73.0" prefHeight="233.0" prefWidth="162.0" />
-                        <Button fx:id="executeQueryButton" layoutX="23.0" layoutY="320.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="135.0" text="Execute" />
-                     </children>
-                  </AnchorPane>
-               </items>
-            </SplitPane>
-         </content>
-      </Tab>
-   </tabs>
-</TabPane>
+<AnchorPane fx:id="anchorPane" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.MainController">
+    <children>
+        <TabPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <tabs>
+                <Tab closable="false" style="-fx-focus-color: transparent; -fx-faint-focus-color: transparent;" text="Tables view">
+                    <content>
+                        <SplitPane dividerPositions="0.717391304347826" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0">
+                            <items>
+                                <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" prefHeight="398.0" prefWidth="433.0">
+                                    <children>
+                                        <TableView fx:id="dataTableView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="354.0" prefWidth="425.0" style="-fx-focus-color: transparent; -fx-faint-focus-color: transparent;" AnchorPane.bottomAnchor="46.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="1.0" AnchorPane.topAnchor="0.0" />
+                                        <Pagination fx:id="paginationTab1" layoutY="347.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="52.0" prefWidth="424.0" AnchorPane.bottomAnchor="1.0" />
+                                    </children>
+                                </AnchorPane>
+                                <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+                                    <children>
+                                        <ComboBox fx:id="tablesNameComboBox" layoutX="4.0" layoutY="41.0" prefWidth="150.0" />
+                                        <Label layoutX="14.0" layoutY="14.0" prefHeight="16.0" prefWidth="121.0" text="Table:" />
+                                        <Label layoutX="14.0" layoutY="85.0" text="Keyword:" />
+                                        <TextField fx:id="keywordField" layoutX="11.0" layoutY="114.0" prefHeight="26.0" prefWidth="135.0" />
+                                        <Button fx:id="searchAnyTextButton" layoutX="14.0" layoutY="164.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="135.0" text="Search" />
+                                    </children>
+                                </AnchorPane>
+                            </items>
+                        </SplitPane>
+                    </content>
+                </Tab>
+                <Tab closable="false" style="-fx-focus-color: transparent; -fx-faint-focus-color: transparent;" text="Pre-computed queries">
+                    <content>
+                        <SplitPane dividerPositions="0.6916666666666667" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0">
+                            <items>
+                                <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" prefHeight="398.0" prefWidth="433.0">
+                                    <children>
+                                        <TableView fx:id="queryResultsTableView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="398.0" prefWidth="425.0" style="-fx-focus-color: transparent; -fx-faint-focus-color: transparent;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                                    </children>
+                                </AnchorPane>
+                                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+                                    <children>
+                                        <ComboBox fx:id="queryComboBox" layoutX="4.0" layoutY="41.0" prefWidth="150.0" />
+                                        <Label layoutX="14.0" layoutY="14.0" prefHeight="16.0" prefWidth="121.0" text="Query:" />
+                                        <TextArea fx:id="queryNameArea" editable="false" layoutX="10.0" layoutY="73.0" prefHeight="233.0" prefWidth="162.0" />
+                                        <Button fx:id="executeQueryButton" layoutX="23.0" layoutY="320.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="135.0" text="Execute" />
+                                    </children>
+                                </AnchorPane>
+                            </items>
+                        </SplitPane>
+                    </content>
+                </Tab>
+            </tabs>
+        </TabPane>
+    </children>
+</AnchorPane>
