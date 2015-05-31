@@ -145,6 +145,13 @@ FROM (SELECT CompanyMoviesPerYear.*, RANK() OVER (PARTITION BY prodYear ORDER BY
       )
 WHERE rn = 1 OR rn =  2 OR rn = 3
 
+
+--Query l)
+SELECT id, name, trivia, minibiography, extract(year from birthdate)
+FROM PERSON
+WHERE deathdate IS NULL AND (trivia LIKE '%opera singer%' OR minibiography LIKE '%opera singer%')
+ORDER BY birthdate DESC;
+
 --Query m)
 --Returns production_id and person_id, application should get the names from the id by another request.
 WITH altName AS
